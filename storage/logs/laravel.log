@@ -1,0 +1,29 @@
+[2026-11-08 15:33:13] local.ERROR: The D:\laragon\laragon\www\AffiliateAuto\bootstrap\cache directory must be present and writable. {"exception":"[object] (Exception(code: 0): The D:\\laragon\\laragon\\www\\AffiliateAuto\\bootstrap\\cache directory must be present and writable. at D:/laragon/laragon/www/AffiliateAuto/vendor/laravel/framework/src/Illuminate/Foundation/PackageManifest.php:179)
+[stacktrace]
+#0 D:/laragon/laragon/www/AffiliateAuto/vendor/laravel/framework/src/Illuminate/Foundation/PackageManifest.php(132): Illuminate/Foundation/PackageManifest->write(Array)
+#1 D:/laragon/laragon/www/AffiliateAuto/vendor/laravel/framework/src/Illuminate/Foundation/PackageManifest.php(108): Illuminate/Foundation/PackageManifest->build()
+#2 D:/laragon/laragon/www/AffiliateAuto/vendor/laravel/framework/src/Illuminate/Foundation/PackageManifest.php(91): Illuminate/Foundation/PackageManifest->getManifest()
+#3 D:/laragon/laragon/www/AffiliateAuto/vendor/laravel/framework/src/Illuminate/Foundation/PackageManifest.php(80): Illuminate/Foundation/PackageManifest->config('aliases')
+#4 D:/laragon/laragon/www/AffiliateAuto/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/RegisterFacades.php(26): Illuminate/Foundation/PackageManifest->aliases()
+#5 D:/laragon/laragon/www/AffiliateAuto/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(342): Illuminate/Foundation/Bootstrap/RegisterFacades->bootstrap(Object(Illuminate/Foundation/Application))
+#6 D:/laragon/laragon/www/AffiliateAuto/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(487): Illuminate/Foundation/Application->bootstrapWith(Array)
+#7 D:/laragon/laragon/www/AffiliateAuto/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(196): Illuminate/Foundation/Console/Kernel->bootstrap()
+#8 D:/laragon/laragon/www/AffiliateAuto/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1235): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#9 D:/laragon/laragon/www/AffiliateAuto/artisan(13): Illuminate/Foundation/Application->handleCommand(Object(Symfony/Component/Console/Input/ArgvInput))
+#10 {main}
+"} 
+[2026-11-08 15:34:16] local.ERROR: The D:\laragon\laragon\www\AffiliateAuto\bootstrap\cache directory must be present and writable. {"exception":"[object] (Exception(code: 0): The D:\\laragon\\laragon\\www\\AffiliateAuto\\bootstrap\\cache directory must be present and writable. at D:/laragon/laragon/www/AffiliateAuto/vendor/laravel/framework/src/Illuminate/Foundation/PackageManifest.php:179)
+[stacktrace]
+#0 D:/laragon/laragon/www/AffiliateAuto/vendor/laravel/framework/src/Illuminate/Foundation/PackageManifest.php(132): Illuminate/Foundation/PackageManifest->write(Array)
+#1 D:/laragon/laragon/www/AffiliateAuto/vendor/laravel/framework/src/Illuminate/Foundation/PackageManifest.php(108): Illuminate/Foundation/PackageManifest->build()
+#2 D:/laragon/laragon/www/AffiliateAuto/vendor/laravel/framework/src/Illuminate/Foundation/PackageManifest.php(91): Illuminate/Foundation/PackageManifest->getManifest()
+#3 D:/laragon/laragon/www/AffiliateAuto/vendor/laravel/framework/src/Illuminate/Foundation/PackageManifest.php(80): Illuminate/Foundation/PackageManifest->config('aliases')
+#4 D:/laragon/laragon/www/AffiliateAuto/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/RegisterFacades.php(26): Illuminate/Foundation/PackageManifest->aliases()
+#5 D:/laragon/laragon/www/AffiliateAuto/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(342): Illuminate/Foundation/Bootstrap/RegisterFacades->bootstrap(Object(Illuminate/Foundation/Application))
+#6 D:/laragon/laragon/www/AffiliateAuto/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(487): Illuminate/Foundation/Application->bootstrapWith(Array)
+#7 D:/laragon/laragon/www/AffiliateAuto/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(196): Illuminate/Foundation/Console/Kernel->bootstrap()
+#8 D:/laragon/laragon/www/AffiliateAuto/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1235): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#9 D:/laragon/laragon/www/AffiliateAuto/artisan(13): Illuminate/Foundation/Application->handleCommand(Object(Symfony/Component/Console/Input/ArgvInput))
+#10 {main}
+"} 
+[2026-11-08 15:55:44] testing.INFO: Đã xuất bản giả lập thành công lên kênh {"task_id":1,"channel_id":1,"video_file_path":"D:\\laragon\\laragon\\www\\AffiliateAuto\\storage\\app/buffer_vault\\mock_video_1.mp4","caption":"Đánh giá chân thực Máy sấy tóc ion âm tốc độ cao. Giá rẻ bất ngờ, săn sale ngay góc trái giỏ hàng nhé cả nhà! 🛒🔥 #review #affiliate #dealhot #muataitiktok","hashtags":"#review #affiliate #dealhot #muataitiktok","product_name":"Máy sấy tóc ion âm tốc độ cao"} 
