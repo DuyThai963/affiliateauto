@@ -1,14 +1,14 @@
-<!-- [Design Read]: Operational timeline and status table listing recent tasks with State Machine pills (scripting, rendering, ready_in_vault, published). -->
-<div class="rounded-xl border border-slate-800 bg-slate-900 overflow-hidden shadow-sm">
+<!-- [Design Read]: Clean Apple-styled data table with subtle hairline borders, soft pastel status pills, and monospaced asset tags. -->
+<div class="rounded-2xl border border-[#E5E5EA] bg-[#FFFFFF] overflow-hidden shadow-apple-card">
     <!-- Header with Filter -->
-    <div class="p-5 border-b border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="px-6 py-4 border-b border-[#E5E5EA] flex flex-col md:flex-row md:items-center justify-between gap-3 bg-[#FBFBFD]">
         <div>
-            <h3 class="text-base font-bold text-white">Lịch Trình Hàng Đợi & Kho Đệm (Buffer Vault)</h3>
-            <p class="text-xs text-slate-400 mt-0.5">Vòng đời trạng thái: pending → scripting → assets_ready → rendering → ready_in_vault → publishing → published.</p>
+            <h3 class="text-sm font-bold text-[#1D1D1F]">Hàng Đợi Xuất Bản & Kho Đệm (Buffer Vault)</h3>
+            <p class="text-[11px] text-[#86868B] mt-0.5">Vòng đời: pending → scripting → assets_ready → rendering → ready_in_vault → published.</p>
         </div>
 
-        <div class="flex items-center space-x-2">
-            <select wire:model.live="statusFilter" class="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-emerald-500">
+        <div>
+            <select wire:model.live="statusFilter" class="px-3 py-1.5 bg-[#FFFFFF] border border-[#E5E5EA] rounded-xl text-xs text-[#1D1D1F] focus:outline-none focus:border-[#0071E3] shadow-apple-btn">
                 <option value="">Tất cả trạng thái</option>
                 <option value="ready_in_vault">Ready In Vault (Sẵn sàng)</option>
                 <option value="rendering">Rendering (Đang render)</option>
@@ -20,102 +20,100 @@
 
     <!-- Table -->
     <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm text-slate-300">
-            <thead class="bg-slate-950/70 text-xs uppercase font-semibold text-slate-400 tracking-wider border-b border-slate-800">
+        <table class="w-full text-left text-xs text-[#1D1D1F]">
+            <thead class="bg-[#F5F5F7]/60 text-[11px] font-semibold text-[#86868B] uppercase tracking-wider border-b border-[#E5E5EA]">
                 <tr>
-                    <th class="px-5 py-3.5">ID / Video</th>
-                    <th class="px-5 py-3.5">Kênh Đích</th>
-                    <th class="px-5 py-3.5">Loại Tác Vụ</th>
-                    <th class="px-5 py-3.5">Bước Hiện Tại</th>
-                    <th class="px-5 py-3.5">Tiến Độ</th>
-                    <th class="px-5 py-3.5">Trạng Thái</th>
-                    <th class="px-5 py-3.5 text-right">Thao Tác</th>
+                    <th class="px-6 py-3">Video / Tiêu đề</th>
+                    <th class="px-6 py-3">Kênh Đích</th>
+                    <th class="px-6 py-3">Loại Kịch Bản</th>
+                    <th class="px-6 py-3">Bước Hiện Tại</th>
+                    <th class="px-6 py-3">Tiến Độ</th>
+                    <th class="px-6 py-3">Trạng Thái</th>
+                    <th class="px-6 py-3 text-right">Thao Tác</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-800/80">
+            <tbody class="divide-y divide-[#F5F5F7]">
                 @forelse ($tasks as $task)
-                    <tr class="hover:bg-slate-850/60 transition-colors">
-                        <td class="px-5 py-4">
-                            <div class="font-semibold text-white max-w-sm truncate">
+                    <tr class="hover:bg-[#FBFBFD] transition-colors">
+                        <td class="px-6 py-3.5">
+                            <div class="font-semibold text-[#1D1D1F] max-w-sm truncate">
                                 #{{ $task->id }} - {{ $task->title ?: 'Chưa có tiêu đề' }}
                             </div>
                             @if ($task->product)
-                                <div class="text-xs text-slate-400 flex items-center space-x-1 mt-0.5">
+                                <div class="text-[11px] text-[#86868B] flex items-center space-x-1 mt-0.5">
                                     <span>🛒</span>
                                     <span>{{ $task->product->product_name }}</span>
                                 </div>
                             @endif
                             @if ($task->video_path)
-                                <div class="text-[11px] font-mono text-emerald-400 truncate max-w-xs mt-0.5" title="{{ $task->video_path }}">
+                                <div class="text-[11px] font-mono text-[#0071E3] truncate max-w-xs mt-0.5" title="{{ $task->video_path }}">
                                     📁 {{ basename($task->video_path) }}
                                 </div>
                             @endif
                         </td>
-                        <td class="px-5 py-4 whitespace-nowrap">
-                            <span class="font-medium text-slate-200">
-                                {{ $task->channel?->channel_name ?: '—' }}
-                            </span>
+                        <td class="px-6 py-3.5 whitespace-nowrap text-[#515154] font-medium">
+                            {{ $task->channel?->channel_name ?: '—' }}
                         </td>
-                        <td class="px-5 py-4 whitespace-nowrap text-xs">
+                        <td class="px-6 py-3.5 whitespace-nowrap">
                             @if ($task->task_type === 'affiliate_original')
-                                <span class="text-purple-300 font-medium">Affiliate Original</span>
+                                <span class="text-[#8E24AA] font-medium">Affiliate Original</span>
                             @else
-                                <span class="text-emerald-300 font-medium">Growth Reup Clone</span>
+                                <span class="text-[#2E7D32] font-medium">Growth Reup Clone</span>
                             @endif
                         </td>
-                        <td class="px-5 py-4 text-xs text-slate-400 max-w-xs truncate">
+                        <td class="px-6 py-3.5 text-[#86868B] max-w-xs truncate text-[11px]">
                             {{ $task->current_step }}
                         </td>
-                        <td class="px-5 py-4 whitespace-nowrap">
+                        <td class="px-6 py-3.5 whitespace-nowrap">
                             <div class="flex items-center space-x-2">
-                                <div class="w-16 h-1.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
-                                    <div class="h-full bg-emerald-500" style="width: {{ $task->progress }}%"></div>
+                                <div class="w-14 h-1.5 bg-[#E5E5EA] rounded-full overflow-hidden">
+                                    <div class="h-full bg-[#0071E3] rounded-full" style="width: {{ $task->progress }}%"></div>
                                 </div>
-                                <span class="font-mono text-xs text-slate-300">{{ $task->progress }}%</span>
+                                <span class="font-mono text-[11px] text-[#515154]">{{ $task->progress }}%</span>
                             </div>
                         </td>
-                        <td class="px-5 py-4 whitespace-nowrap">
+                        <td class="px-6 py-3.5 whitespace-nowrap">
                             @switch($task->status)
                                 @case('ready_in_vault')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-950 text-blue-300 border border-blue-800">
-                                        📦 Ready In Vault
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#E3F2FD] text-[#1976D2]">
+                                        📦 In Vault
                                     </span>
                                     @break
                                 @case('rendering')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-950 text-amber-300 border border-amber-800">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#FFF3E0] text-[#E65100]">
                                         ⚙ Rendering
                                     </span>
                                     @break
                                 @case('published')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-950 text-emerald-300 border border-emerald-800">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#E8F5E9] text-[#2E7D32]">
                                         ✓ Published
                                     </span>
                                     @break
                                 @case('failed')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-950 text-rose-300 border border-rose-800">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#FFEBEE] text-[#C62828]">
                                         ✕ Failed
                                     </span>
                                     @break
                                 @default
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#F5F5F7] text-[#515154]">
                                         {{ $task->status }}
                                     </span>
                             @endswitch
                         </td>
-                        <td class="px-5 py-4 whitespace-nowrap text-right text-xs">
+                        <td class="px-6 py-3.5 whitespace-nowrap text-right">
                             <button 
                                 type="button" 
                                 wire:confirm="Bạn có chắc chắn muốn xóa tác vụ này?" 
                                 wire:click="deleteTask({{ $task->id }})" 
-                                class="px-2 py-1 rounded bg-rose-950/70 hover:bg-rose-900 text-rose-300 transition-colors">
+                                class="text-[11px] font-medium text-[#FF3B30] hover:underline">
                                 Xóa
                             </button>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-5 py-8 text-center text-slate-500">
-                            Chưa có tác vụ video nào trong hàng đợi. Hãy bấm nút "Tạo Video Thử Nghiệm" ở trên!
+                        <td colspan="7" class="px-6 py-8 text-center text-[#86868B]">
+                            Chưa có tác vụ video nào. Hãy bấm "Tạo Video Thử Nghiệm" ở trên!
                         </td>
                     </tr>
                 @endforelse
@@ -123,4 +121,3 @@
         </table>
     </div>
 </div>
-
