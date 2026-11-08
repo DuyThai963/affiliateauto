@@ -21,3 +21,36 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Laravel Storage & Framework Cache
+/storage/app/public/*
+!/storage/app/public/.gitignore
+/storage/app/browser_profiles/*
+!/storage/app/browser_profiles/.gitignore
+/storage/app/buffer_vault/*
+!/storage/app/buffer_vault/.gitignore
+/storage/app/temp_assets/*
+!/storage/app/temp_assets/.gitignore
+
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/cache/data/*
+!/storage/framework/cache/data/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/framework/testing/*
+!/storage/framework/testing/.gitignore
+
+# Logs
+/storage/logs/*
+!/storage/logs/.gitignore
+
+# Local SQLite databases
+/database/*.sqlite
+/database/*.sqlite-journal
+
+# Bootstrap cache files (except .gitignore)
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
