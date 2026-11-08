@@ -21,6 +21,17 @@ class LiveMonitor extends Component
 {
     public ?string $feedbackMessage = null;
     public bool $isGeneratingTestVideo = false;
+    public string $statusFilter = '';
+
+    public function deleteTask(int $taskId): void
+    {
+        $task = VideoTask::query()->find($taskId);
+
+        if ($task !== null) {
+            $task->delete();
+            $this->feedbackMessage = "Đã xóa tác vụ #{$taskId} thành công.";
+        }
+    }
 
     /**
      * Trigger test video generation pipeline using Mock Drivers.
@@ -176,6 +187,13 @@ class LiveMonitor extends Component
             ->latest()
             ->first();
 
+        // 6. Danh sách tác vụ trong hàng đợi & Buffer Vault
+        $tasksQuery = VideoTask::query()->with(['channel', 'product']);
+        if ($this->statusFilter !== '') {
+            $tasksQuery->where('status', $this->statusFilter);
+        }
+        $tasks = $tasksQuery->latest()->take(15)->get();
+
         return view('livewire.dashboard.live-monitor', [
             'totalActiveChannels' => $totalActiveChannels,
             'growthChannelsCount' => $growthChannelsCount,
@@ -186,6 +204,7 @@ class LiveMonitor extends Component
             'tokensConsumedToday' => $tokensConsumedToday,
             'totalTokensLimit' => $totalTokensLimit,
             'activeTask' => $activeTask,
+            'tasks' => $tasks,
         ]);
     }
 }

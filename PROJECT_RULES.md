@@ -13,8 +13,13 @@
   - Chỉ viết mới hoặc chỉnh sửa đúng vị trí được yêu cầu trong từng Sprint.
   - Tuyệt đối KHÔNG tự ý refactor, cơ cấu lại các file, class, cấu trúc thư mục hoặc logic cũ đang hoạt động ổn định.
   - Ưu tiên tính ổn định của luồng nghiệp vụ hiện có hơn là tự ý tối ưu hóa code theo sở thích cá nhân.
-- **Git Conventions:**
-  - Khi phân nhánh hoặc commit, sử dụng prefix hành động cá nhân (ví dụ: `thai-add`, `thai-fix`).
+- **Git Conventions & Kiểm soát Version Control (BẮT BUỘC):**
+  - **TUYỆT ĐỐI KHÔNG TỰ Ý COMMIT HOẶC PUSH GIT:** Nghiêm cấm mọi hành vi tự động chạy `git commit` hoặc `git push` khi chưa có yêu cầu và sự đồng ý rõ ràng bằng văn bản từ User trong phiên chat.
+  - Mọi thay đổi về code, giao diện, cấu hình PHẢI giữ nguyên ở working tree để User kiểm tra trực quan, nghiệm thu và review trước.
+  - Khi được User cho phép commit, sử dụng prefix hành động cá nhân (ví dụ: `thai-add`, `thai-fix`).
+  - **Dọn dẹp tệp tin tạm và file test (Mandatory Cleanup):**
+    - BẮT BUỘC phải dọn dẹp, xóa bỏ toàn bộ các script tạm thời (như `test_*.php`, `scratch/*.php`, file dump dữ liệu mẫu) ngay sau khi hoàn thành kiểm thử hoặc trước khi chuẩn bị commit/push lên Git.
+    - Tuyệt đối không để sót các file rác, file chạy thử nghiệm tạm bợ làm ô nhiễm codebase và working tree của dự án.
 
 ---
 
