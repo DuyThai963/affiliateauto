@@ -1,0 +1,1 @@
+// AffiliateAuto application entry point
