@@ -1,5 +1,5 @@
-<!-- [Design Read]: Apple HIG Dark Mode modal dialog for API key provisioning with #1C1C1E elevated surface, #2E2E32 borders, and discrete input fields. -->
 <div>
+    <!-- [Design Read]: Apple HIG Dark Mode modal dialog for API key provisioning with #1C1C1E elevated surface, #2E2E32 borders, and discrete input fields. -->
     @if ($isOpen)
         <div class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
             <div class="fixed inset-0 bg-black/60 backdrop-blur-md transition-opacity" wire:click="closeModal"></div>

@@ -43,8 +43,8 @@ class CheckSystemConnections extends Command
             $this->line("  ├─ api_keys: {$apiKeysCount} records");
             $this->line("  ├─ products: {$productsCount} records");
             $this->line("  └─ video_tasks: {$videoTasksCount} records");
-        } catch (\Throwable $e) {
-            $this->error('✘ PostgreSQL (Neon DB) THẤT BẠI: ' . $e->getMessage());
+        } catch (\Throwable $exception) {
+            $this->error('✘ PostgreSQL (Neon DB) THẤT BẠI: ' . $exception->getMessage());
             return Command::FAILURE;
         }
 
@@ -52,11 +52,11 @@ class CheckSystemConnections extends Command
         try {
             $redis = Redis::connection();
             $redis->set('test_connection_key', 'antigravity_ok_' . time());
-            $val = $redis->get('test_connection_key');
+            $testValue = $redis->get('test_connection_key');
             $this->info('✔ Redis (Upstash TLS) - KẾT NỐI THÀNH CÔNG!');
-            $this->line("  └─ Test Key Value: {$val}");
-        } catch (\Throwable $e) {
-            $this->error('✘ Redis (Upstash) THẤT BẠI: ' . $e->getMessage());
+            $this->line("  └─ Test Key Value: {$testValue}");
+        } catch (\Throwable $exception) {
+            $this->error('✘ Redis (Upstash) THẤT BẠI: ' . $exception->getMessage());
             return Command::FAILURE;
         }
 

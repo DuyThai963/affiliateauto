@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: affiliateauto_app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+      - ./storage/app/browser_profiles:/var/www/storage/app/browser_profiles
+      - ./storage/app/buffer_vault:/var/www/storage/app/buffer_vault
+      - ./storage/app/cloud_vault_5tb:/var/www/storage/app/cloud_vault_5tb
+      - ./storage/app/temp_assets:/var/www/storage/app/temp_assets
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+    networks:
+      - affiliate_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: affiliateauto_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - affiliate_network
+
+  redis:
+    image: redis:alpine
+    container_name: affiliateauto_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - affiliate_network
+
+networks:
+  affiliate_network:
+    driver: bridge
+
+volumes:
+  redis_data:
+    driver: local
+

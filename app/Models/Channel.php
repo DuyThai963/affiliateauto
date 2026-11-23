@@ -17,8 +17,11 @@ class Channel extends Model
         'browser_profile_path',
         'daily_post_limit',
         'min_interval_minutes',
+        'operation_mode',
         'status',
         'last_posted_at',
+        'last_healthchecked_at',
+        'health_notes',
     ];
 
     /**
@@ -32,6 +35,7 @@ class Channel extends Model
             'daily_post_limit' => 'integer',
             'min_interval_minutes' => 'integer',
             'last_posted_at' => 'datetime',
+            'last_healthchecked_at' => 'datetime',
         ];
     }
 

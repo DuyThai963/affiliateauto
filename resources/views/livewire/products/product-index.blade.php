@@ -1,5 +1,5 @@
-<!-- [Design Read]: Apple HIG Dark Mode product inventory catalogue with #18181B studio cards, #26262A borders, luminous platform pills, and minimalist action controls. -->
 <div class="space-y-6 max-w-7xl mx-auto">
+    <!-- [Design Read]: Apple HIG Dark Mode product inventory catalogue with #18181B studio cards, #26262A borders, luminous platform pills, and minimalist action controls. -->
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>

@@ -19,8 +19,11 @@ return new class extends Migration
             $table->string('browser_profile_path', 255);
             $table->integer('daily_post_limit')->default(5);
             $table->integer('min_interval_minutes')->default(200);
+            $table->string('operation_mode', 30)->default('auto_pilot');
             $table->enum('status', ['active', 'paused', 'needs_relogin'])->default('active');
             $table->timestamp('last_posted_at')->nullable();
+            $table->timestamp('last_healthchecked_at')->nullable();
+            $table->string('health_notes', 255)->nullable();
             $table->timestamps();
         });
     }

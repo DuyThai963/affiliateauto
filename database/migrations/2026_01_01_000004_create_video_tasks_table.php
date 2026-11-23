@@ -26,6 +26,7 @@ return new class extends Migration
                 'scripting',
                 'assets_ready',
                 'rendering',
+                'waiting_approval',
                 'ready_in_vault',
                 'publishing',
                 'published',

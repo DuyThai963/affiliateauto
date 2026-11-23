@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: affiliate-auto
+    runtime: docker
+    dockerfilePath: ./docker/Dockerfile.render
+    dockerContext: .
+    plan: free
+    healthCheckPath: /up
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        generateValue: true
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_SSLMODE
+        value: require
+      - key: QUEUE_CONNECTION
+        value: redis
+      - key: CACHE_STORE
+        value: redis
+      - key: SESSION_DRIVER
+        value: database
+      - key: LLM_DRIVER
+        value: gemini
+      - key: VIDEO_GEN_DRIVER
+        value: veo3
+      - key: TTS_DRIVER
+        value: edge
+      - key: RENDER_DRIVER
+        value: ffmpeg
+      - key: PUBLISHER_DRIVER
+        value: telegram_copilot
+      - key: CLOUD_STORAGE_DRIVER
+        value: gdrive_api
+      - key: FFMPEG_BIN
+        value: ffmpeg
+      - key: PYTHON_BIN
+        value: python3
+      - key: CRON_SECRET_TOKEN
+        generateValue: true
+      - key: TELEGRAM_WEBHOOK_SECRET
+        generateValue: true

@@ -1,5 +1,5 @@
-<!-- [Design Read]: Apple HIG Dark Mode API Key manager with #18181B cards, #26262A borders, macOS segmented control, and battery-style quota meters. -->
 <div class="space-y-6 max-w-7xl mx-auto">
+    <!-- [Design Read]: Apple HIG Dark Mode API Key manager with #18181B cards, #26262A borders, macOS segmented control, and battery-style quota meters. -->
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>

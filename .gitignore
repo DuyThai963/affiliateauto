@@ -23,6 +23,7 @@ yarn-error.log
 /.zed
 
 # Laravel Storage & Framework Cache
+/storage/browser_profiles/*
 /storage/app/public/*
 !/storage/app/public/.gitignore
 /storage/app/browser_profiles/*
@@ -31,6 +32,8 @@ yarn-error.log
 !/storage/app/buffer_vault/.gitignore
 /storage/app/temp_assets/*
 !/storage/app/temp_assets/.gitignore
+/storage/app/cloud_vault_5tb/*
+!/storage/app/cloud_vault_5tb/.gitignore
 
 /storage/framework/cache/*
 !/storage/framework/cache/.gitignore

@@ -41,13 +41,13 @@
                             </div>
                             @if ($task->product)
                                 <div class="text-[11px] text-[#8E8E93] flex items-center space-x-1 mt-0.5">
-                                    <span>🛒</span>
+                                    <span class="text-[10px] text-[#A1A1A6] font-mono uppercase">SP:</span>
                                     <span>{{ $task->product->product_name }}</span>
                                 </div>
                             @endif
                             @if ($task->video_path)
-                                <div class="text-[11px] font-mono text-[#FFFFFF] truncate max-w-xs mt-0.5" title="{{ $task->video_path }}">
-                                    📁 {{ basename($task->video_path) }}
+                                <div class="text-[11px] font-mono text-[#A1A1A6] truncate max-w-xs mt-0.5" title="{{ $task->video_path }}">
+                                    {{ basename($task->video_path) }}
                                 </div>
                             @endif
                         </td>
@@ -75,27 +75,27 @@
                         <td class="px-6 py-3.5 whitespace-nowrap">
                             @switch($task->status)
                                 @case('ready_in_vault')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#242426] text-[#FFFFFF] border border-[#38383A]">
-                                        📦 In Vault
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#242426] text-[#FFFFFF] border border-[#38383A]">
+                                        Trong kho đệm
                                     </span>
                                     @break
                                 @case('rendering')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#242426] text-[#FFFFFF] border border-[#38383A]">
-                                        ⚙ Rendering
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#242426] text-[#FFFFFF] border border-[#38383A]">
+                                        Đang render
                                     </span>
                                     @break
                                 @case('published')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#30D158]/15 text-[#30D158] border border-[#30D158]/25">
-                                        ✓ Published
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#242426] text-[#30D158] border border-[#30D158]/30">
+                                        Đã xuất bản
                                     </span>
                                     @break
                                 @case('failed')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#FF453A]/15 text-[#FF453A] border border-[#FF453A]/25">
-                                        ✕ Failed
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#242426] text-[#FF453A] border border-[#FF453A]/30">
+                                        Thất bại
                                     </span>
                                     @break
                                 @default
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#242426] text-[#8E8E93]">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#242426] text-[#8E8E93]">
                                         {{ $task->status }}
                                     </span>
                             @endswitch

@@ -1,5 +1,5 @@
-<!-- [Design Read]: Apple HIG Dark Mode modal sheet with #1C1C1E elevated surface, frosted backdrop, #2E2E32 hairline borders, and segmented option cards. -->
 <div>
+    <!-- [Design Read]: Apple HIG Dark Mode modal sheet with #1C1C1E elevated surface, frosted backdrop, #2E2E32 hairline borders, and segmented option cards. -->
     @if ($isOpen)
         <div class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
             <div class="fixed inset-0 bg-black/60 backdrop-blur-md transition-opacity" wire:click="closeModal"></div>
@@ -54,7 +54,7 @@
                                     <label class="cursor-pointer border rounded-2xl p-3 flex flex-col justify-between transition-all {{ $type === 'growth' ? 'bg-[#30D158]/15 border-[#30D158] shadow-apple-card' : 'bg-[#121214] border-[#2E2E32] hover:border-[#636366]' }}">
                                         <div class="flex items-center space-x-2">
                                             <input type="radio" wire:model.live="type" value="growth" class="text-[#30D158] focus:ring-[#30D158]">
-                                            <span class="font-bold text-xs text-[#F5F5F7]">🌱 Growth</span>
+                                            <span class="font-bold text-xs text-[#F5F5F7]">Growth</span>
                                         </div>
                                         <p class="text-[11px] text-[#8E8E93] mt-2 leading-relaxed">
                                             Xây kênh kéo view. <strong class="text-[#FF453A]">Tuyệt đối không gắn giỏ hàng.</strong>
@@ -65,7 +65,7 @@
                                     <label class="cursor-pointer border rounded-2xl p-3 flex flex-col justify-between transition-all {{ $type === 'affiliate' ? 'bg-[#BF5AF2]/15 border-[#BF5AF2] shadow-apple-card' : 'bg-[#121214] border-[#2E2E32] hover:border-[#636366]' }}">
                                         <div class="flex items-center space-x-2">
                                             <input type="radio" wire:model.live="type" value="affiliate" class="text-[#BF5AF2] focus:ring-[#BF5AF2]">
-                                            <span class="font-bold text-xs text-[#F5F5F7]">🛒 Affiliate</span>
+                                            <span class="font-bold text-xs text-[#F5F5F7]">Affiliate</span>
                                         </div>
                                         <p class="text-[11px] text-[#8E8E93] mt-2 leading-relaxed">
                                             Kênh kiếm tiền AIDA. <strong class="text-[#0A84FF]">Bắt buộc ghim link giỏ hàng.</strong>

@@ -1,0 +1,80 @@
+FROM php:8.4-fpm-bookworm
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /var/www
+
+# 1. Cài đặt Nginx, Supervisor, FFmpeg, Python 3 và thư viện PHP cần thiết (không cài Chromium để tối ưu RAM Render)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    git \
+    unzip \
+    zip \
+    nginx \
+    supervisor \
+    ffmpeg \
+    python3 \
+    python3-pip \
+    libpq-dev \
+    libzip-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libicu-dev \
+    libonig-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 2. Cài đặt PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+        pdo_pgsql \
+        pdo_mysql \
+        zip \
+        pcntl \
+        posix \
+        bcmath \
+        intl \
+        gd \
+        opcache
+
+RUN pecl install redis && docker-php-ext-enable redis
+
+# 3. Cài đặt Composer & Node.js 20.x để build Tailwind/Vite UI
+COPY --from=composer:2.8 /usr/bin/composer /usr/bin/composer
+
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# 4. Cài đặt Edge-TTS
+RUN pip3 install --no-cache-dir --break-system-packages edge-tts
+
+# 5. Copy source & build dependencies + frontend assets (public/build)
+COPY . /var/www
+
+RUN composer install --no-dev --optimize-autoloader --no-interaction \
+    && npm install \
+    && npm run build \
+    && rm -rf node_modules
+
+# 6. Chuẩn bị thư mục storage và phân quyền
+RUN mkdir -p /var/www/storage/app/browser_profiles \
+    && mkdir -p /var/www/storage/app/buffer_vault \
+    && mkdir -p /var/www/storage/app/temp_assets \
+    && mkdir -p /var/www/storage/app/cloud_vault_5tb \
+    && mkdir -p /var/www/storage/framework/cache \
+    && mkdir -p /var/www/storage/framework/sessions \
+    && mkdir -p /var/www/storage/framework/views \
+    && mkdir -p /var/www/bootstrap/cache \
+    && chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
+    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
+COPY docker/nginx-render.conf /etc/nginx/sites-available/render.conf
+COPY docker/supervisord-render.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/start-render.sh /usr/local/bin/start-render.sh
+RUN chmod +x /usr/local/bin/start-render.sh
+
+EXPOSE 10000
+
+CMD ["/usr/local/bin/start-render.sh"]

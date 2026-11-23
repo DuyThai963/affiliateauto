@@ -58,7 +58,7 @@ class ChannelFormModal extends Component
             $this->platform = 'tiktok';
             $this->channel_name = '';
             $this->type = 'growth';
-            $this->browser_profile_path = 'storage/browser_profiles/tiktok_channel_' . Str::random(6);
+            $this->browser_profile_path = 'storage/app/browser_profiles/tiktok_channel_' . Str::random(6);
             $this->daily_post_limit = 5;
             $this->min_interval_minutes = 200;
             $this->status = 'active';
@@ -70,7 +70,7 @@ class ChannelFormModal extends Component
     public function updatedPlatform(string $value): void
     {
         if ($this->channelId === null) {
-            $this->browser_profile_path = 'storage/browser_profiles/' . $value . '_channel_' . Str::random(6);
+            $this->browser_profile_path = 'storage/app/browser_profiles/' . $value . '_channel_' . Str::random(6);
         }
     }
 
