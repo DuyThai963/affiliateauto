@@ -59,7 +59,8 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction \
     && rm -rf node_modules
 
 # 6. Chuẩn bị thư mục storage và phân quyền
-RUN mkdir -p /var/www/storage/app/browser_profiles \
+RUN mkdir -p /var/www/storage/logs \
+    && mkdir -p /var/www/storage/app/browser_profiles \
     && mkdir -p /var/www/storage/app/buffer_vault \
     && mkdir -p /var/www/storage/app/temp_assets \
     && mkdir -p /var/www/storage/app/cloud_vault_5tb \
@@ -67,10 +68,13 @@ RUN mkdir -p /var/www/storage/app/browser_profiles \
     && mkdir -p /var/www/storage/framework/sessions \
     && mkdir -p /var/www/storage/framework/views \
     && mkdir -p /var/www/bootstrap/cache \
+    && touch /var/www/storage/logs/laravel.log \
     && chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
-    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+    && chmod -R 777 /var/www/storage /var/www/bootstrap/cache
 
-COPY docker/nginx-render.conf /etc/nginx/sites-available/render.conf
+# 7. Cấu hình Nginx & Supervisor
+RUN rm -rf /etc/nginx/sites-enabled/* /etc/nginx/sites-available/* /etc/nginx/conf.d/*
+COPY docker/nginx-render.conf /etc/nginx/render.conf
 COPY docker/supervisord-render.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/start-render.sh /usr/local/bin/start-render.sh
 RUN chmod +x /usr/local/bin/start-render.sh

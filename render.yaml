@@ -13,14 +13,16 @@ services:
         value: "false"
       - key: APP_KEY
         generateValue: true
+      - key: LOG_CHANNEL
+        value: stderr
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_SSLMODE
         value: require
       - key: QUEUE_CONNECTION
-        value: redis
+        value: database
       - key: CACHE_STORE
-        value: redis
+        value: database
       - key: SESSION_DRIVER
         value: database
       - key: LLM_DRIVER
