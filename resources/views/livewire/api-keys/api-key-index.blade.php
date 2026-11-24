@@ -1,5 +1,5 @@
-<div class="space-y-6 max-w-7xl mx-auto">
-    <!-- [Design Read]: Apple HIG Dark Mode API Key manager with #18181B cards, #26262A borders, macOS segmented control, and battery-style quota meters. -->
+<div x-data="{ activeProvider: 'all' }" class="space-y-6 max-w-7xl mx-auto">
+    <!-- [Design Read]: Apple HIG Dark Mode API Key manager with #18181B cards, #26262A borders, macOS segmented control, and battery-style quota meters. Instant zero-latency client switching with smooth skeleton loading frames. -->
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
@@ -32,41 +32,74 @@
         </div>
     @endif
 
-    <!-- Segmented Filter Control (macOS Dark Style) -->
-    <div class="inline-flex p-1 rounded-2xl bg-[#18181B] border border-[#26262A] space-x-1">
+    <!-- Segmented Filter Control (Instant Zero-Latency macOS Dark Switch) -->
+    <div class="inline-flex p-1 rounded-2xl bg-[#18181B] border border-[#26262A] space-x-1 select-none">
         <button 
             type="button" 
-            wire:click="$set('providerFilter', '')" 
-            class="px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all {{ $providerFilter === '' ? 'bg-[#242426] text-[#F5F5F7] font-semibold shadow-apple-card' : 'text-[#8E8E93] hover:text-[#F5F5F7]' }}">
+            @click="activeProvider = 'all'" 
+            :class="activeProvider === 'all' ? 'bg-[#242426] text-[#F5F5F7] font-semibold shadow-apple-card' : 'text-[#8E8E93] hover:text-[#F5F5F7]'"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all">
             Tất cả nhà cung cấp
         </button>
         <button 
             type="button" 
-            wire:click="$set('providerFilter', 'gemini')" 
-            class="px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all {{ $providerFilter === 'gemini' ? 'bg-[#242426] text-[#0A84FF] font-semibold shadow-apple-card' : 'text-[#8E8E93] hover:text-[#F5F5F7]' }}">
+            @click="activeProvider = 'gemini'" 
+            :class="activeProvider === 'gemini' ? 'bg-[#242426] text-[#0A84FF] font-semibold shadow-apple-card' : 'text-[#8E8E93] hover:text-[#F5F5F7]'"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all">
             Google Gemini
         </button>
         <button 
             type="button" 
-            wire:click="$set('providerFilter', 'claude')" 
-            class="px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all {{ $providerFilter === 'claude' ? 'bg-[#242426] text-[#FF9F0A] font-semibold shadow-apple-card' : 'text-[#8E8E93] hover:text-[#F5F5F7]' }}">
+            @click="activeProvider = 'claude'" 
+            :class="activeProvider === 'claude' ? 'bg-[#242426] text-[#FF9F0A] font-semibold shadow-apple-card' : 'text-[#8E8E93] hover:text-[#F5F5F7]'"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all">
             Anthropic Claude
         </button>
         <button 
             type="button" 
-            wire:click="$set('providerFilter', 'openai')" 
-            class="px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all {{ $providerFilter === 'openai' ? 'bg-[#242426] text-[#30D158] font-semibold shadow-apple-card' : 'text-[#8E8E93] hover:text-[#F5F5F7]' }}">
+            @click="activeProvider = 'openai'" 
+            :class="activeProvider === 'openai' ? 'bg-[#242426] text-[#30D158] font-semibold shadow-apple-card' : 'text-[#8E8E93] hover:text-[#F5F5F7]'"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all">
             OpenAI GPT
         </button>
     </div>
 
+    <!-- Loading Skeleton Frame (Shows during Livewire background network roundtrips) -->
+    <div wire:loading.delay.shortest class="w-full">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            <div class="rounded-2xl border border-[#26262A] bg-[#18181B]/70 p-5 animate-pulse space-y-4">
+                <div class="flex justify-between items-center">
+                    <div class="h-4 bg-[#26262A] rounded-full w-20"></div>
+                    <div class="h-4 bg-[#26262A] rounded-full w-16"></div>
+                </div>
+                <div class="h-5 bg-[#26262A] rounded w-36"></div>
+                <div class="h-3 bg-[#26262A] rounded w-48"></div>
+                <div class="h-2 bg-[#26262A] rounded-full w-full"></div>
+            </div>
+            <div class="rounded-2xl border border-[#26262A] bg-[#18181B]/70 p-5 animate-pulse space-y-4">
+                <div class="flex justify-between items-center">
+                    <div class="h-4 bg-[#26262A] rounded-full w-20"></div>
+                    <div class="h-4 bg-[#26262A] rounded-full w-16"></div>
+                </div>
+                <div class="h-5 bg-[#26262A] rounded w-36"></div>
+                <div class="h-3 bg-[#26262A] rounded w-48"></div>
+                <div class="h-2 bg-[#26262A] rounded-full w-full"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Cards Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+    <div wire:loading.remove class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         @forelse ($apiKeys as $key)
             @php
                 $percentage = $key->daily_limit > 0 ? min(100, round(($key->used_today / $key->daily_limit) * 100)) : 0;
             @endphp
-            <div class="rounded-2xl border border-[#26262A] bg-[#18181B] p-5 shadow-apple-card flex flex-col justify-between hover:border-[#38383A] transition-colors">
+            <div 
+                x-show="activeProvider === 'all' || activeProvider === '{{ $key->provider }}'"
+                x-transition:enter="transition ease-out duration-150"
+                x-transition:enter-start="opacity-0 scale-[0.98]"
+                x-transition:enter-end="opacity-100 scale-100"
+                class="rounded-2xl border border-[#26262A] bg-[#18181B] p-5 shadow-apple-card flex flex-col justify-between hover:border-[#38383A] transition-colors">
                 <div>
                     <!-- Top Provider Tag & Status Switch -->
                     <div class="flex items-center justify-between">
@@ -143,6 +176,17 @@
                 Chưa có API Key nào. Bấm "Thêm API Key" để bắt đầu nạp key!
             </div>
         @endforelse
+
+        @if ($apiKeys->isNotEmpty())
+            @php
+                $configuredProviders = $apiKeys->pluck('provider')->unique()->toArray();
+            @endphp
+            <div 
+                x-show="activeProvider !== 'all' && !{{ json_encode($configuredProviders) }}.includes(activeProvider)"
+                class="col-span-full p-8 text-center bg-[#18181B] border border-[#26262A] rounded-2xl text-[#8E8E93] text-xs shadow-apple-card">
+                Chưa có API Key nào cho nhà cung cấp này. Bấm "Thêm API Key" để cấu hình!
+            </div>
+        @endif
     </div>
 
     <!-- Modal Form Component -->

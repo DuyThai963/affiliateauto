@@ -22,6 +22,8 @@ use App\Drivers\TTS\EdgeTtsDriver;
 use App\Drivers\TTS\MockTtsDriver;
 use App\Drivers\VideoGen\GeminiVeo3Driver;
 use App\Drivers\VideoGen\MockVideoGenDriver;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -105,5 +107,17 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
         }
+
+        // Tự động làm sạch và giải phóng transaction bị gián đoạn trước mỗi vòng lặp của Queue Worker
+        // Ngăn chặn hoàn toàn lỗi 25P02 "current transaction is aborted" trên PostgreSQL
+        Queue::looping(function () {
+            try {
+                if (DB::transactionLevel() > 0) {
+                    DB::rollBack();
+                }
+            } catch (\Throwable $e) {
+                DB::purge();
+            }
+        });
     }
 }

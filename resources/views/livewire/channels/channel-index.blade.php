@@ -63,7 +63,7 @@
     </div>
 
     <!-- Data Table -->
-    <div class="rounded-2xl border border-[#26262A] bg-[#18181B] overflow-hidden shadow-apple-card">
+    <div wire:loading.class="opacity-60 transition-opacity" class="rounded-2xl border border-[#26262A] bg-[#18181B] overflow-hidden shadow-apple-card">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-xs text-[#F5F5F7]">
                 <thead class="bg-[#121214] text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider border-b border-[#26262A]">

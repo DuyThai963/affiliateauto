@@ -17,9 +17,21 @@
     @else
         <script src="https://cdn.tailwindcss.com"></script>
     @endif
-    
-    <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        /* Apple HIG High-Performance Navigation Progress Bar */
+        .livewire-progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2.5px;
+            background: linear-gradient(90deg, #0A84FF, #30D158);
+            z-index: 99999;
+            box-shadow: 0 0 10px rgba(10, 132, 255, 0.7);
+            transition: width 0.2s ease;
+        }
+    </style>
 
     @livewireStyles
 </head>
@@ -42,11 +54,11 @@
                 </div>
             </div>
 
-            <!-- Navigation Links -->
+            <!-- Navigation Links (Instant SPA navigation with wire:navigate.hover) -->
             <nav class="flex-1 px-3 py-4 space-y-1">
                 <div class="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-[#636366]">Menu Chính</div>
 
-                <a href="{{ route('dashboard') }}" 
+                <a wire:navigate.hover href="{{ route('dashboard') }}" 
                    class="flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all {{ request()->routeIs('dashboard') ? 'bg-[#1C1C1E] text-[#FFFFFF] border border-[#2E2E32] font-semibold shadow-apple-card' : 'text-[#8E8E93] hover:text-[#F5F5F7] hover:bg-[#18181B]' }}">
                     <svg class="w-4 h-4 {{ request()->routeIs('dashboard') ? 'text-[#FFFFFF]' : 'text-[#8E8E93]' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
@@ -54,7 +66,7 @@
                     <span>Dashboard</span>
                 </a>
 
-                <a href="{{ route('channels.index') }}" 
+                <a wire:navigate.hover href="{{ route('channels.index') }}" 
                    class="flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all {{ request()->routeIs('channels.*') ? 'bg-[#1C1C1E] text-[#FFFFFF] border border-[#2E2E32] font-semibold shadow-apple-card' : 'text-[#8E8E93] hover:text-[#F5F5F7] hover:bg-[#18181B]' }}">
                     <svg class="w-4 h-4 {{ request()->routeIs('channels.*') ? 'text-[#FFFFFF]' : 'text-[#8E8E93]' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
@@ -62,7 +74,7 @@
                     <span>Kênh Phân Phối</span>
                 </a>
 
-                <a href="{{ route('api-keys.index') }}" 
+                <a wire:navigate.hover href="{{ route('api-keys.index') }}" 
                    class="flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all {{ request()->routeIs('api-keys.*') ? 'bg-[#1C1C1E] text-[#FFFFFF] border border-[#2E2E32] font-semibold shadow-apple-card' : 'text-[#8E8E93] hover:text-[#F5F5F7] hover:bg-[#18181B]' }}">
                     <svg class="w-4 h-4 {{ request()->routeIs('api-keys.*') ? 'text-[#FFFFFF]' : 'text-[#8E8E93]' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
@@ -70,7 +82,7 @@
                     <span>Cấu hình API Keys</span>
                 </a>
 
-                <a href="{{ route('products.index') }}" 
+                <a wire:navigate.hover href="{{ route('products.index') }}" 
                    class="flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all {{ request()->routeIs('products.*') ? 'bg-[#1C1C1E] text-[#FFFFFF] border border-[#2E2E32] font-semibold shadow-apple-card' : 'text-[#8E8E93] hover:text-[#F5F5F7] hover:bg-[#18181B]' }}">
                     <svg class="w-4 h-4 {{ request()->routeIs('products.*') ? 'text-[#FFFFFF]' : 'text-[#8E8E93]' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
@@ -78,7 +90,7 @@
                     <span>Sản phẩm Giỏ hàng</span>
                 </a>
 
-                <a href="{{ route('system-logs.index') }}" 
+                <a wire:navigate.hover href="{{ route('system-logs.index') }}" 
                    class="flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-medium transition-all {{ request()->routeIs('system-logs.*') ? 'bg-[#1C1C1E] text-[#FFFFFF] border border-[#2E2E32] font-semibold shadow-apple-card' : 'text-[#8E8E93] hover:text-[#F5F5F7] hover:bg-[#18181B]' }}">
                     <svg class="w-4 h-4 {{ request()->routeIs('system-logs.*') ? 'text-[#FFFFFF]' : 'text-[#8E8E93]' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>

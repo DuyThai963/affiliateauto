@@ -1,4 +1,4 @@
-<div class="space-y-6 max-w-7xl mx-auto" @if ($activeTask) wire:poll.3s @endif>
+<div class="space-y-6 max-w-7xl mx-auto" @if ($activeTask && in_array($activeTask->status, ['rendering', 'publishing', 'scripting'])) wire:poll.5s @endif>
     <!-- [Design Read]: Apple HIG Dark Mode Sprint 5 Control Center with Master Auto-Pilot Switch, Tiered Storage 5TB archive, Smart Retry, and Error Inspector Modal. -->
 
     <!-- Top Action Bar -->

@@ -15,10 +15,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return redirect()->route('dashboard');
-});
-
+Route::get('/', LiveMonitor::class)->name('home');
 Route::get('/dashboard', LiveMonitor::class)->name('dashboard');
 Route::get('/channels', ChannelIndex::class)->name('channels.index');
 Route::get('/api-keys', ApiKeyIndex::class)->name('api-keys.index');

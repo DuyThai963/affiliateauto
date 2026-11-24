@@ -121,14 +121,45 @@ class SystemLogViewer extends Component
         $this->lastTickMessage = '🗑 Đã xóa sạch toàn bộ log cũ! Sẵn sàng ghi nhận chu trình mới.';
     }
 
+    /**
+     * Đọc nhanh phần đuôi của tệp nhật ký (tối đa 256KB) bằng fseek
+     * Tránh đọc toàn bộ file MB gây lag và ngốn RAM server.
+     */
+    protected function readLogTail(string $filePath, int $maxBytes = 262144): string
+    {
+        if (!File::exists($filePath)) {
+            return '';
+        }
+
+        $fileSize = filesize($filePath);
+        if ($fileSize === 0) {
+            return '';
+        }
+
+        $handle = fopen($filePath, 'rb');
+        if (!$handle) {
+            return '';
+        }
+
+        if ($fileSize > $maxBytes) {
+            fseek($handle, -$maxBytes, SEEK_END);
+            fgets($handle); // Bỏ qua dòng đầu tiên vì có thể bị cắt dở
+        }
+
+        $content = stream_get_contents($handle);
+        fclose($handle);
+
+        return $content ?: '';
+    }
+
     public function getCleanErrors(): string
     {
         $logPath = storage_path('logs/laravel.log');
-        if (!File::exists($logPath)) {
+        $rawContent = $this->readLogTail($logPath, 262144);
+        if ($rawContent === '') {
             return 'Chưa có tệp nhật ký nào được ghi nhận.';
         }
 
-        $rawContent = (string) File::get($logPath);
         $lines = explode("\n", $rawContent);
 
         $filteredLines = [];
@@ -192,10 +223,7 @@ class SystemLogViewer extends Component
     public function render()
     {
         $logPath = storage_path('logs/laravel.log');
-        $rawLogs = '';
-        if (File::exists($logPath)) {
-            $rawLogs = (string) File::get($logPath);
-        }
+        $rawLogs = $this->readLogTail($logPath, 262144);
 
         $allLines = array_filter(explode("\n", $rawLogs), function (string $line) {
             return trim($line) !== '';

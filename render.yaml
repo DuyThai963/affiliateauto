@@ -24,9 +24,9 @@ services:
       - key: QUEUE_CONNECTION
         value: database
       - key: CACHE_STORE
-        value: database
+        value: file
       - key: SESSION_DRIVER
-        value: database
+        value: file
       - key: LLM_DRIVER
         value: gemini
       - key: VIDEO_GEN_DRIVER

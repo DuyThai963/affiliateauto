@@ -44,11 +44,12 @@ chmod -R 777 /var/www/storage /var/www/bootstrap/cache
 echo "[INIT] Running database migrations..."
 php /var/www/artisan migrate --force --no-interaction || true
 
-# 4. Cache optimizations
+# 4. Cache optimizations & Queue restart
 echo "[INIT] Caching Laravel config, routes, views..."
 php /var/www/artisan config:cache || true
 php /var/www/artisan route:cache || true
 php /var/www/artisan view:cache || true
+php /var/www/artisan queue:restart || true
 
 # 5. Re-enforce permissions after artisan commands
 chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
