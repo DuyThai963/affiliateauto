@@ -4,6 +4,7 @@ FROM php:8.4-fpm-bookworm
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+ENV HOME=/var/www
 
 WORKDIR /var/www
 

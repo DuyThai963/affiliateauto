@@ -241,4 +241,39 @@ class Sprint7CloudDeployTest extends TestCase
             ->assertStatus(200)
             ->assertJson(['status' => 'ok']);
     }
+
+    public function test_system_log_viewer_can_clear_logs_and_extract_clean_errors(): void
+    {
+        $logPath = storage_path('logs/laravel.log');
+        $dummyLog = implode("\n", [
+            '[2026-11-24 07:19:13] production.INFO: SystemLogViewer: Đã tạo tác vụ chạy thử',
+            'INFO',
+            '"}',
+            '#37 {main}',
+            '#36 /var/www/artisan(13): Illuminate\Foundation\Application->handleCommand()',
+            '#35 /var/www/vendor/laravel/framework/Application.php(1235)',
+            '[stacktrace]',
+            'ERR',
+            '[previous exception] [object] (PDOException(code: 7): SQLSTATE[08006] could not open certificate file "/root/.postgresql/postgresql.crt": Permission denied at Connector.php:67)',
+            '#0 /var/www/vendor/laravel/framework/Connector.php(67): PDO::connect()',
+        ]);
+        File::put($logPath, $dummyLog);
+
+        $viewer = new \App\Livewire\Logs\SystemLogViewer();
+        $cleanErrors = $viewer->getCleanErrors();
+
+        // Must contain the real error line and vital info
+        $this->assertStringContainsString('could not open certificate file', $cleanErrors);
+        $this->assertStringContainsString('Permission denied', $cleanErrors);
+        $this->assertStringContainsString('SystemLogViewer:', $cleanErrors);
+
+        // Must NOT contain redundant stack trace lines
+        $this->assertStringNotContainsString('#37 {main}', $cleanErrors);
+        $this->assertStringNotContainsString('#36 /var/www/artisan', $cleanErrors);
+        $this->assertStringNotContainsString('[stacktrace]', $cleanErrors);
+
+        // Test clear logs
+        $viewer->clearLogs();
+        $this->assertStringContainsString('NHẬT KÝ ĐÃ ĐƯỢC XÓA SẠCH', (string) File::get($logPath));
+    }
 }

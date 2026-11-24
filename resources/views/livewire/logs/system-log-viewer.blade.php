@@ -83,9 +83,10 @@
         </div>
     @endif
 
-    <!-- Action Toolbar (Điều khiển kiểm thử) -->
+    <!-- Action Toolbar (Điều khiển kiểm thử & Tiện ích Log) -->
     <div class="p-4 rounded-2xl bg-[#18181B] border border-[#26262A] shadow-apple-card flex flex-wrap items-center justify-between gap-4">
-        <div class="flex items-center space-x-3">
+        <!-- Nhóm nút kích hoạt kiểm thử -->
+        <div class="flex flex-wrap items-center gap-3">
             <!-- Nút 1: Kích hoạt Cron Tick thủ công -->
             <button 
                 type="button" 
@@ -115,24 +116,98 @@
             </button>
         </div>
 
-        <div class="flex items-center space-x-2">
-            <!-- Bộ lọc mức log -->
-            <span class="text-xs text-[#8E8E93]">Lọc:</span>
-            <select wire:model.live="filterLevel" class="px-2.5 py-1.5 rounded-lg bg-[#242426] border border-[#38383A] text-xs text-[#F5F5F7] focus:outline-none focus:border-[#0A84FF]">
-                <option value="ALL">Tất cả (All)</option>
-                <option value="CRON">Chỉ tác vụ Cron</option>
-                <option value="ERROR">Chỉ báo lỗi (Errors)</option>
-                <option value="WARNING">Cảnh báo (Warnings)</option>
-            </select>
+        <!-- Nhóm công cụ Log: Copy gọn, Xóa log, Lọc -->
+        <div class="flex flex-wrap items-center gap-2.5">
+            <!-- Nút 3: Sao chép riêng lỗi gọn gàng (Không dính stack trace rác #37 {main}) -->
+            <div x-data="{ 
+                copied: false, 
+                loading: false,
+                async copyErrors() {
+                    this.loading = true;
+                    try {
+                        const cleanText = await $wire.getCleanErrors();
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            await navigator.clipboard.writeText(cleanText);
+                        } else {
+                            const textArea = document.createElement('textarea');
+                            textArea.value = cleanText;
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(textArea);
+                        }
+                        this.copied = true;
+                        setTimeout(() => { this.copied = false; }, 3000);
+                    } catch (error) {
+                        console.error('Không thể copy:', error);
+                    } finally {
+                        this.loading = false;
+                    }
+                }
+            }">
+                <button 
+                    type="button" 
+                    @click="copyErrors"
+                    :disabled="loading"
+                    title="Trích xuất chỉ các dòng báo lỗi thực sự (loại bỏ sạch stack trace #37 {main}) để gửi cho trợ lý"
+                    class="inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-medium transition-all active:scale-[0.98] border shadow-apple-btn"
+                    :class="copied ? 'bg-[#30D158]/20 border-[#30D158]/50 text-[#30D158]' : 'bg-[#1C1C1E] hover:bg-[#2C2C2E] text-[#F5F5F7] border-[#38383A]'">
+                    
+                    <template x-if="!copied && !loading">
+                        <span class="inline-flex items-center">
+                            <svg class="w-3.5 h-3.5 mr-1.5 text-[#BF5AF2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+                            </svg>
+                            <span>Copy Log Lỗi Gọn</span>
+                        </span>
+                    </template>
 
-            <!-- Nút Xóa Log -->
+                    <template x-if="loading">
+                        <span class="inline-flex items-center text-[#8E8E93]">
+                            <svg class="animate-spin -ml-0.5 mr-1.5 h-3.5 w-3.5 text-[#F5F5F7]" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                            </svg>
+                            <span>Đang trích xuất...</span>
+                        </span>
+                    </template>
+
+                    <template x-if="copied">
+                        <span class="inline-flex items-center text-[#30D158]">
+                            <svg class="w-3.5 h-3.5 mr-1.5 text-[#30D158]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>✓ Đã Copy Lỗi Gọn!</span>
+                        </span>
+                    </template>
+                </button>
+            </div>
+
+            <!-- Nút 4: Xóa Log Sạch Sẽ -->
             <button 
                 type="button" 
-                wire:confirm="Bạn có chắc chắn muốn làm sạch toàn bộ file log hiện tại?"
+                wire:confirm="Bạn có chắc chắn muốn làm sạch toàn bộ file nhật ký laravel.log hiện tại?"
                 wire:click="clearLogs" 
-                class="px-3 py-1.5 rounded-lg bg-[#242426] hover:bg-[#FF453A]/20 hover:text-[#FF453A] text-[#8E8E93] border border-[#38383A] text-xs font-medium transition-colors">
-                Xóa Log
+                wire:loading.attr="disabled"
+                title="Làm sạch toàn bộ file nhật ký hệ thống"
+                class="inline-flex items-center px-3.5 py-2 rounded-xl bg-[#242426] hover:bg-[#FF453A]/20 hover:text-[#FF453A] hover:border-[#FF453A]/40 text-[#8E8E93] border border-[#38383A] text-xs font-medium transition-all active:scale-[0.98]">
+                <svg wire:loading.remove wire:target="clearLogs" class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                <span wire:loading wire:target="clearLogs" class="inline-block w-3.5 h-3.5 mr-1.5 border-2 border-[#FF453A] border-t-transparent rounded-full animate-spin"></span>
+                <span>Xóa Log</span>
             </button>
+
+            <!-- Bộ lọc mức log -->
+            <div class="flex items-center space-x-1.5 pl-1">
+                <span class="text-xs text-[#8E8E93]">Lọc:</span>
+                <select wire:model.live="filterLevel" class="px-2.5 py-1.5 rounded-xl bg-[#242426] border border-[#38383A] text-xs text-[#F5F5F7] focus:outline-none focus:border-[#0A84FF]">
+                    <option value="ALL">Tất cả (All)</option>
+                    <option value="CRON">Chỉ tác vụ Cron</option>
+                    <option value="ERROR">Chỉ báo lỗi (Errors)</option>
+                    <option value="WARNING">Cảnh báo (Warnings)</option>
+                </select>
+            </div>
         </div>
     </div>
 

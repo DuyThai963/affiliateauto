@@ -95,9 +95,71 @@ class SystemLogViewer extends Component
     {
         $logPath = storage_path('logs/laravel.log');
         if (File::exists($logPath)) {
-            File::put($logPath, '[' . Carbon::now()->toDateTimeString() . "] local.INFO: --- NHẬT KÝ HỆ THỐNG ĐÃ ĐƯỢC LÀM SẠCH BỞI QUẢN TRỊ VIÊN ---\n");
+            File::put($logPath, '[' . Carbon::now()->toDateTimeString() . "] production.INFO: --- NHẬT KÝ ĐÃ ĐƯỢC XÓA SẠCH VÀ LÀM MỚI HOÀN TOÀN ---\n");
         }
-        $this->lastTickMessage = '🗑 Đã xóa sạch nhật ký hệ thống.';
+        $this->lastTickMessage = '🗑 Đã xóa sạch toàn bộ log cũ! Sẵn sàng ghi nhận chu trình mới.';
+    }
+
+    public function getCleanErrors(): string
+    {
+        $logPath = storage_path('logs/laravel.log');
+        if (!File::exists($logPath)) {
+            return 'Chưa có tệp nhật ký nào được ghi nhận.';
+        }
+
+        $rawContent = (string) File::get($logPath);
+        $lines = explode("\n", $rawContent);
+
+        $filteredLines = [];
+
+        foreach ($lines as $line) {
+            $trimmed = trim($line);
+            if ($trimmed === '') {
+                continue;
+            }
+
+            // 1. Loại bỏ các dòng stack trace dư thừa dạng "#37 {main}", "#36 /var/www/vendor/..."
+            if (preg_match('/^\s*(#[0-9]+|\{main\}|INFO$|ERR$|DEBUG$|WARN$|\"\}|\"|\[stacktrace\])/i', $trimmed)) {
+                continue;
+            }
+
+            // 2. Loại bỏ các đường dẫn vendor nội bộ nếu không chứa exception thực tế
+            if (str_contains($trimmed, '/vendor/') && !str_contains($trimmed, 'Exception') && !str_contains($trimmed, 'Error') && !str_contains($trimmed, 'Permission denied')) {
+                continue;
+            }
+
+            // 3. Giữ lại những dòng thực sự quan trọng: Lỗi, Cảnh báo, Exception, Trạng thái luồng
+            if (
+                str_contains($trimmed, '.ERROR:') ||
+                str_contains($trimmed, '.CRITICAL:') ||
+                str_contains($trimmed, '.EMERGENCY:') ||
+                str_contains($trimmed, '.ALERT:') ||
+                str_contains($trimmed, '.WARNING:') ||
+                str_contains($trimmed, 'Exception') ||
+                str_contains($trimmed, 'PDOException') ||
+                str_contains($trimmed, 'Error') ||
+                str_contains($trimmed, 'SQLSTATE') ||
+                str_contains($trimmed, 'Permission denied') ||
+                str_contains($trimmed, 'connection to server') ||
+                str_contains($trimmed, 'failed') ||
+                str_contains($trimmed, 'FAIL') ||
+                str_contains($trimmed, '[previous exception]') ||
+                str_contains($trimmed, 'SystemLogViewer:') ||
+                str_contains($trimmed, '[INIT]') ||
+                str_contains($trimmed, '[MANUAL TRIGGER')
+            ) {
+                $filteredLines[] = $trimmed;
+            }
+        }
+
+        if (empty($filteredLines)) {
+            return "✅ Tuyệt vời! Hệ thống không ghi nhận bất kỳ lỗi nào trong log.";
+        }
+
+        // Lấy 40 dòng lỗi và sự kiện gần nhất để gửi trợ lý
+        $recentErrors = array_slice($filteredLines, -40);
+
+        return implode("\n", $recentErrors);
     }
 
     public function render()

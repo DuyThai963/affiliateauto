@@ -16,7 +16,14 @@ sed "s/__PORT__/${PORT_TO_USE}/g" /etc/nginx/render.conf > /etc/nginx/sites-enab
 echo "[INIT] Testing Nginx configuration..."
 nginx -t
 
-# 2. Ensure all storage directories and log file exist with full write permissions
+# 2. Fix PostgreSQL SSL and user environment for www-data
+echo "[INIT] Configuring environment & permissions..."
+chmod 755 /root
+mkdir -p /var/www/.postgresql
+chown -R www-data:www-data /var/www/.postgresql
+chmod 755 /var/www/.postgresql
+
+# 3. Ensure all storage directories and log file exist with full write permissions
 echo "[INIT] Initializing storage directories..."
 mkdir -p /var/www/storage/logs \
          /var/www/storage/framework/cache \
