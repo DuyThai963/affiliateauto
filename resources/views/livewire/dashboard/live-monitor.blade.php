@@ -24,17 +24,17 @@
             <!-- Nút Làm Mới Thủ Công (Manual Reload) -->
             <button 
                 type="button" 
-                wire:click="$refresh" 
+                wire:click="manualRefresh" 
                 wire:loading.attr="disabled"
                 title="Tải lại số liệu mới nhất từ cơ sở dữ liệu"
                 class="inline-flex items-center justify-center px-3.5 py-2 rounded-xl text-xs font-medium bg-[#1C1C1E] hover:bg-[#242426] text-[#F5F5F7] border border-[#2E2E32] transition-all shadow-apple-btn active:scale-[0.98]">
-                <span wire:loading.remove wire:target="$refresh" class="flex items-center">
+                <span wire:loading.remove wire:target="manualRefresh" class="flex items-center">
                     <svg class="w-3.5 h-3.5 mr-1.5 text-[#8E8E93]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                     </svg>
                     Làm Mới
                 </span>
-                <span wire:loading wire:target="$refresh" class="flex items-center text-[#8E8E93]">
+                <span wire:loading wire:target="manualRefresh" class="flex items-center text-[#8E8E93]">
                     <svg class="animate-spin -ml-0.5 mr-1.5 h-3.5 w-3.5 text-[#FFFFFF]" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>

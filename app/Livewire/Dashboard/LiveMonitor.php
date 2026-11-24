@@ -582,28 +582,51 @@ class LiveMonitor extends Component
         $this->dispatch('task-queue-updated');
     }
 
+    public function manualRefresh(): void
+    {
+        \Illuminate\Support\Facades\Cache::forget('dashboard_live_stats');
+        $this->feedbackMessage = 'Đã làm mới và cập nhật số liệu mới nhất từ cơ sở dữ liệu.';
+    }
+
     public function render(): View
     {
-        // 1. Tối ưu gom nhóm: Lấy danh sách kênh active (tái sử dụng cho thống kê và dropdown)
-        $availableChannels = Channel::query()->where('status', 'active')->get();
-        $totalActiveChannels = $availableChannels->count();
-        $growthChannelsCount = $availableChannels->where('type', 'growth')->count();
-        $affiliateChannelsCount = $availableChannels->where('type', 'affiliate')->count();
-        $totalDailyQuota = (int) $availableChannels->sum('daily_post_limit');
+        // 1. Tối ưu gom nhóm & Cache: Lưu thống kê 30 giây để giảm 8-10 câu query qua Singapore
+        $cachedStats = \Illuminate\Support\Facades\Cache::remember('dashboard_live_stats', 30, function () {
+            $channels = Channel::query()->where('status', 'active')->get();
+            $keys = ApiKey::query()->where('is_active', true)->get();
+            $today = Carbon::today();
 
-        // 2. Tối ưu gom nhóm: Lấy danh sách API Keys active (tái sử dụng cho widget và thống kê)
-        $activeApiKeys = ApiKey::query()->where('is_active', true)->get();
-        $tokensConsumedToday = (int) $activeApiKeys->sum('used_today');
-        $totalTokensLimit = (int) $activeApiKeys->sum('daily_limit');
+            return [
+                'availableChannels' => $channels,
+                'totalActiveChannels' => $channels->count(),
+                'growthChannelsCount' => $channels->where('type', 'growth')->count(),
+                'affiliateChannelsCount' => $channels->where('type', 'affiliate')->count(),
+                'totalDailyQuota' => (int) $channels->sum('daily_post_limit'),
+                'activeApiKeys' => $keys,
+                'tokensConsumedToday' => (int) $keys->sum('used_today'),
+                'totalTokensLimit' => (int) $keys->sum('daily_limit'),
+                'vaultTasksCount' => VideoTask::query()->where('status', 'ready_in_vault')->count(),
+                'waitingApprovalCount' => VideoTask::query()->where('status', 'waiting_approval')->count(),
+                'publishedTodayCount' => VideoTask::query()
+                    ->where('status', 'published')
+                    ->where('published_at', '>=', $today)
+                    ->count(),
+            ];
+        });
 
-        // 3. Đếm nhanh tác vụ Buffer Vault & Đã đăng hôm nay
-        $todayStart = Carbon::today();
-        $vaultTasksCount = VideoTask::query()->where('status', 'ready_in_vault')->count();
-        $waitingApprovalCount = VideoTask::query()->where('status', 'waiting_approval')->count();
-        $publishedTodayCount = VideoTask::query()
-            ->where('status', 'published')
-            ->where('published_at', '>=', $todayStart)
-            ->count();
+        $totalActiveChannels = $cachedStats['totalActiveChannels'];
+        $growthChannelsCount = $cachedStats['growthChannelsCount'];
+        $affiliateChannelsCount = $cachedStats['affiliateChannelsCount'];
+        $totalDailyQuota = $cachedStats['totalDailyQuota'];
+        $availableChannels = $cachedStats['availableChannels'];
+
+        $activeApiKeys = $cachedStats['activeApiKeys'];
+        $tokensConsumedToday = $cachedStats['tokensConsumedToday'];
+        $totalTokensLimit = $cachedStats['totalTokensLimit'];
+
+        $vaultTasksCount = $cachedStats['vaultTasksCount'];
+        $waitingApprovalCount = $cachedStats['waitingApprovalCount'];
+        $publishedTodayCount = $cachedStats['publishedTodayCount'];
 
         // 4. Tác vụ đang xử lý thời gian thực
         $activeTask = VideoTask::query()
