@@ -15,6 +15,17 @@
             <div class="mt-2 text-[11px] text-[#8E8E93]">
                 Kênh có trạng thái <span class="text-[#30D158] font-medium">Active</span> mới được quét sinh video.
             </div>
+            @if ($activeChannelsCount === 0 && $totalChannelsCount > 0)
+                <div class="mt-2.5">
+                    <button 
+                        type="button" 
+                        wire:click="activateAllChannels"
+                        title="Bấm để kích hoạt trạng thái Active cho kênh thử nghiệm ngay"
+                        class="w-full py-1.5 px-2 rounded-xl bg-[#30D158]/20 hover:bg-[#30D158]/30 text-[#30D158] border border-[#30D158]/40 text-[11px] font-semibold transition-all shadow-apple-btn active:scale-[0.98]">
+                        ⚡ Kích Hoạt Kênh Test Ngay
+                    </button>
+                </div>
+            @endif
         </div>
 
         <!-- Card 2: Kho đệm Buffer Vault -->
@@ -87,6 +98,16 @@
     <div class="p-4 rounded-2xl bg-[#18181B] border border-[#26262A] shadow-apple-card flex flex-wrap items-center justify-between gap-4">
         <!-- Nhóm nút kích hoạt kiểm thử -->
         <div class="flex flex-wrap items-center gap-3">
+            <!-- Nút 0: Bật/Tắt Sandbox Test Mode (Chế độ chạy thử tự động) -->
+            <button 
+                type="button" 
+                wire:click="toggleSandboxMode"
+                title="Bật/Tắt Chế Độ Thử Nghiệm: Cho phép hệ thống tự chạy từ A-Z mà không cần nhập key AI & không cần đăng nhập TikTok/Shopee"
+                class="inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-semibold transition-all active:scale-[0.98] border shadow-apple-btn {{ $sandboxMode ? 'bg-[#30D158]/15 border-[#30D158]/40 text-[#30D158]' : 'bg-[#242426] border-[#38383A] text-[#8E8E93]' }}">
+                <span class="w-2 h-2 rounded-full mr-2 {{ $sandboxMode ? 'bg-[#30D158] shadow-[0_0_8px_rgba(48,209,88,0.6)] animate-pulse' : 'bg-[#8E8E93]' }}"></span>
+                <span>Sandbox Mode: {{ $sandboxMode ? 'BẬT (Tự chạy không cần Key)' : 'TẮT (Yêu cầu Key & Cookie)' }}</span>
+            </button>
+
             <!-- Nút 1: Kích hoạt Cron Tick thủ công -->
             <button 
                 type="button" 
@@ -116,71 +137,118 @@
             </button>
         </div>
 
-        <!-- Nhóm công cụ Log: Copy gọn, Xóa log, Lọc -->
+        <!-- Nhóm công cụ Log: Copy gọn tức thì, Xem lỗi, Xóa log, Lọc -->
         <div class="flex flex-wrap items-center gap-2.5">
-            <!-- Nút 3: Sao chép riêng lỗi gọn gàng (Không dính stack trace rác #37 {main}) -->
+            <!-- Nút 3: Sao chép riêng lỗi gọn gàng (Instant Synchronous Copy + Preview Modal) -->
             <div x-data="{ 
-                copied: false, 
-                loading: false,
-                async copyErrors() {
-                    this.loading = true;
+                copied: false,
+                showModal: false,
+                copyText() {
+                    const el = this.$refs.cleanSource;
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(el.value).then(() => {
+                            this.copied = true;
+                            setTimeout(() => { this.copied = false; }, 3000);
+                        }).catch(() => {
+                            this.fallbackCopy();
+                        });
+                    } else {
+                        this.fallbackCopy();
+                    }
+                },
+                fallbackCopy() {
+                    const el = this.$refs.cleanSource;
+                    el.focus();
+                    el.select();
                     try {
-                        const cleanText = await $wire.getCleanErrors();
-                        if (navigator.clipboard && navigator.clipboard.writeText) {
-                            await navigator.clipboard.writeText(cleanText);
-                        } else {
-                            const textArea = document.createElement('textarea');
-                            textArea.value = cleanText;
-                            document.body.appendChild(textArea);
-                            textArea.select();
-                            document.execCommand('copy');
-                            document.body.removeChild(textArea);
-                        }
+                        document.execCommand('copy');
                         this.copied = true;
                         setTimeout(() => { this.copied = false; }, 3000);
-                    } catch (error) {
-                        console.error('Không thể copy:', error);
-                    } finally {
-                        this.loading = false;
+                    } catch (e) {
+                        console.error('Không thể copy:', e);
                     }
                 }
-            }">
-                <button 
-                    type="button" 
-                    @click="copyErrors"
-                    :disabled="loading"
-                    title="Trích xuất chỉ các dòng báo lỗi thực sự (loại bỏ sạch stack trace #37 {main}) để gửi cho trợ lý"
-                    class="inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-medium transition-all active:scale-[0.98] border shadow-apple-btn"
-                    :class="copied ? 'bg-[#30D158]/20 border-[#30D158]/50 text-[#30D158]' : 'bg-[#1C1C1E] hover:bg-[#2C2C2E] text-[#F5F5F7] border-[#38383A]'">
-                    
-                    <template x-if="!copied && !loading">
-                        <span class="inline-flex items-center">
-                            <svg class="w-3.5 h-3.5 mr-1.5 text-[#BF5AF2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
-                            </svg>
-                            <span>Copy Log Lỗi Gọn</span>
-                        </span>
-                    </template>
+            }" class="relative">
+                <!-- Textarea ẩn chứa sẵn toàn bộ lỗi sạch đã trích xuất từ server -->
+                <textarea x-ref="cleanSource" class="sr-only" readonly>{{ $cleanErrorsText }}</textarea>
 
-                    <template x-if="loading">
-                        <span class="inline-flex items-center text-[#8E8E93]">
-                            <svg class="animate-spin -ml-0.5 mr-1.5 h-3.5 w-3.5 text-[#F5F5F7]" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                            </svg>
-                            <span>Đang trích xuất...</span>
-                        </span>
-                    </template>
+                <div class="inline-flex items-center rounded-xl bg-[#1C1C1E] border border-[#38383A] shadow-apple-btn overflow-hidden">
+                    <!-- Nút bấm Copy Ngay -->
+                    <button 
+                        type="button" 
+                        @click="copyText()"
+                        title="Sao chép toàn bộ thông báo lỗi sạch vào clipboard (đã lọc sạch stack trace rác)"
+                        class="inline-flex items-center px-3.5 py-2 text-xs font-medium transition-all active:scale-[0.98]"
+                        :class="copied ? 'bg-[#30D158]/20 text-[#30D158]' : 'text-[#F5F5F7] hover:bg-[#2C2C2E]'">
+                        
+                        <template x-if="!copied">
+                            <span class="inline-flex items-center">
+                                <svg class="w-3.5 h-3.5 mr-1.5 text-[#BF5AF2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+                                </svg>
+                                <span>Copy Log Lỗi Gọn</span>
+                            </span>
+                        </template>
 
-                    <template x-if="copied">
-                        <span class="inline-flex items-center text-[#30D158]">
-                            <svg class="w-3.5 h-3.5 mr-1.5 text-[#30D158]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                            </svg>
-                            <span>✓ Đã Copy Lỗi Gọn!</span>
-                        </span>
-                    </template>
-                </button>
+                        <template x-if="copied">
+                            <span class="inline-flex items-center text-[#30D158] font-semibold">
+                                <svg class="w-3.5 h-3.5 mr-1.5 text-[#30D158]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span>✓ Đã Copy Lỗi Gọn!</span>
+                            </span>
+                        </template>
+                    </button>
+
+                    <!-- Nút Mắt Xem Trước Lỗi Gọn -->
+                    <button 
+                        type="button" 
+                        @click="showModal = true"
+                        title="Xem nhanh toàn bộ nội dung lỗi sạch trên màn hình"
+                        class="px-2.5 py-2 border-l border-[#38383A] text-[#8E8E93] hover:text-[#FFFFFF] hover:bg-[#2C2C2E] transition-colors">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Modal Bảng Xem Lỗi Gọn Trực Tiếp -->
+                <div 
+                    x-show="showModal" 
+                    x-cloak
+                    style="display: none;"
+                    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+                    <div @click.away="showModal = false" class="w-full max-w-2xl bg-[#18181B] border border-[#26262A] rounded-2xl shadow-apple-modal overflow-hidden flex flex-col max-h-[85vh]">
+                        <div class="px-5 py-4 border-b border-[#26262A] flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <span class="w-3 h-3 rounded-full bg-[#BF5AF2]"></span>
+                                <h3 class="text-sm font-semibold text-[#F5F5F7]">Nội Dung Lỗi Đã Làm Sạch (Không Còn Rác)</h3>
+                            </div>
+                            <button type="button" @click="showModal = false" class="text-[#8E8E93] hover:text-[#F5F5F7] text-lg font-bold">&times;</button>
+                        </div>
+                        <div class="p-5 overflow-y-auto flex-1 font-mono text-xs leading-relaxed text-[#F5F5F7] bg-[#121214] select-all scrollbar-thin">
+                            <pre class="whitespace-pre-wrap">{{ $cleanErrorsText }}</pre>
+                        </div>
+                        <div class="px-5 py-3 border-t border-[#26262A] bg-[#18181B] flex items-center justify-between">
+                            <span class="text-xs text-[#8E8E93]">Nhấn nút bên phải hoặc bôi đen văn bản để copy.</span>
+                            <div class="flex items-center space-x-2">
+                                <button 
+                                    type="button" 
+                                    @click="copyText()" 
+                                    class="px-4 py-2 rounded-xl bg-[#FFFFFF] hover:bg-[#EBEBED] text-black text-xs font-semibold shadow-apple-btn transition-all">
+                                    <span x-text="copied ? '✓ Đã Copy!' : 'Sao Chép Lỗi'"></span>
+                                </button>
+                                <button 
+                                    type="button" 
+                                    @click="showModal = false" 
+                                    class="px-4 py-2 rounded-xl bg-[#242426] hover:bg-[#2C2C2E] text-[#F5F5F7] text-xs font-medium border border-[#38383A] transition-colors">
+                                    Đóng
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Nút 4: Xóa Log Sạch Sẽ -->

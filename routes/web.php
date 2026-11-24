@@ -58,26 +58,39 @@ Route::match(['get', 'post'], '/api/cron/tick', function (Request $request) {
     if (!empty($expectedToken)) {
         $providedToken = (string) ($request->query('token') ?: $request->header('X-Cron-Token', ''));
         if (!hash_equals($expectedToken, $providedToken)) {
+            Log::warning('[CRON TICK REJECTED] Sai Secret Token: ' . $providedToken);
             return response()->json(['status' => 'unauthorized'], 403);
         }
     }
 
-    $todayDate = Carbon::today()->toDateString();
+    $now = Carbon::now();
+    $nowString = $now->format('H:i:s d/m/Y');
+
+    // 1. Cập nhật mốc thời gian Cron Tick gần nhất để Dashboard hiển thị ngay
+    SystemSetting::set('last_cron_tick_at', $nowString, 'Thời điểm chạy cron gần nhất từ cron-job.org');
+
+    Log::info("--- [CRON TICK NHỊP TIM] Nhận tín hiệu từ cron-job.org lúc {$nowString} ---");
+
+    $todayDate = $now->toDateString();
     $lastResetDate = (string) SystemSetting::get('last_api_usage_reset_date', '');
     if ($lastResetDate !== $todayDate) {
         Artisan::call('app:reset-daily-api-usage');
         SystemSetting::set('last_api_usage_reset_date', $todayDate, 'Last date API usage was reset');
     }
 
+    // 2. Chạy lệnh nạp đệm (sinh kịch bản)
     if (!Cache::has('cron_produce_buffer_lock')) {
         Artisan::call('app:produce-buffer-content');
         Cache::put('cron_produce_buffer_lock', true, now()->addMinutes(14));
     }
 
+    // 3. Chạy lệnh xuất bản video đúng giờ vàng
     Artisan::call('schedule:dispatch-posts');
+
+    Log::info("--- [CRON TICK HOÀN TẤT] Đã quét kho đệm và lịch trình đăng bài ---");
 
     return response()->json([
         'status' => 'ok',
-        'timestamp' => Carbon::now()->toIso8601String(),
+        'timestamp' => $now->toIso8601String(),
     ]);
 })->name('api.cron.tick');

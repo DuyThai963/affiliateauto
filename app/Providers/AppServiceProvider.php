@@ -41,6 +41,12 @@ class AppServiceProvider extends ServiceProvider
                 return $app->make(ClaudeLlmDriver::class);
             }
 
+            // Tự động chuyển sang Mock AI nếu chưa cấu hình API Key thật nào trong hệ thống
+            $tokenManager = $app->make(TokenManagerService::class);
+            if ($tokenManager->getAvailableKey('gemini') === null) {
+                return $app->make(MockLlmDriver::class);
+            }
+
             return $app->make(GeminiLlmDriver::class);
         });
 

@@ -30,18 +30,28 @@ class DispatchScheduledPostsCommand extends Command
     public function handle(): int
     {
         $now = Carbon::now();
+        $isSandbox = \App\Models\SystemSetting::get('sandbox_test_mode', 'true') === 'true';
 
-        $readyTasks = VideoTask::query()
+        $query = VideoTask::query()
             ->where('status', 'ready_in_vault')
             ->whereNotNull('scheduled_at')
-            ->where('scheduled_at', '<=', $now)
-            ->whereHas('channel', function ($query) {
-                $query->where('status', 'active');
-            })
-            ->get();
+            ->where('scheduled_at', '<=', $now);
+
+        if (!$isSandbox) {
+            $query->whereHas('channel', function ($subQuery) {
+                $subQuery->where('status', 'active');
+            });
+        }
+
+        $readyTasks = $query->get();
 
         $count = $readyTasks->count();
-        $this->info("Tìm thấy {$count} video đã đến lịch hẹn xuất bản.");
+        if ($count > 0) {
+            $this->info("Tìm thấy {$count} video đã đến lịch hẹn xuất bản.");
+            Log::info("DispatchScheduledPostsCommand: Phát hiện {$count} video đã đến giờ hẹn xuất bản!");
+        } else {
+            Log::info("DispatchScheduledPostsCommand: Quét lịch đăng lúc {$now->format('H:i:s')} - Chưa có video nào đến hạn xuất bản.");
+        }
 
         foreach ($readyTasks as $videoTask) {
             $this->comment("Kích hoạt xuất bản cho Video Task #{$videoTask->id} (Kênh: {$videoTask->channel_id})...");

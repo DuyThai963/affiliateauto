@@ -18,6 +18,21 @@ class SystemLogViewer extends Component
     public string $filterLevel = 'ALL';
     public string $lastTickMessage = '';
     public string $simulationStatus = '';
+    public bool $sandboxMode = true;
+
+    public function mount(): void
+    {
+        $this->sandboxMode = SystemSetting::get('sandbox_test_mode', 'true') === 'true';
+    }
+
+    public function toggleSandboxMode(): void
+    {
+        $this->sandboxMode = !$this->sandboxMode;
+        SystemSetting::set('sandbox_test_mode', $this->sandboxMode ? 'true' : 'false', 'Chế độ thử nghiệm tự động không cần key');
+        $statusText = $this->sandboxMode ? 'ĐÃ BẬT (Tự động chạy thử không cần key AI & cookie)' : 'ĐÃ TẮT (Yêu cầu API Key & Cookie thật)';
+        $this->lastTickMessage = "🧪 Chế độ Kiểm thử Tự động (Sandbox): {$statusText}.";
+        Log::info("SystemLogViewer: Chuyển Sandbox Mode sang " . ($this->sandboxMode ? 'ON' : 'OFF'));
+    }
 
     public function triggerCronTick(): void
     {
@@ -91,6 +106,12 @@ class SystemLogViewer extends Component
         $this->simulationStatus = "🎉 Tác vụ mô phỏng Task #{$simulatedTask->id} đã được tạo thành công! Lịch đăng: {$slotText}. {$teleText}";
     }
 
+    public function activateAllChannels(): void
+    {
+        Channel::query()->update(['status' => 'active']);
+        $this->lastTickMessage = '⚡ Đã kích hoạt trạng thái Active cho toàn bộ kênh! Hệ thống sẵn sàng tự động quét.';
+    }
+
     public function clearLogs(): void
     {
         $logPath = storage_path('logs/laravel.log');
@@ -114,7 +135,7 @@ class SystemLogViewer extends Component
 
         foreach ($lines as $line) {
             $trimmed = trim($line);
-            if ($trimmed === '') {
+            if ($trimmed === '' || $trimmed === 'Object(Closure))' || $trimmed === 'INFO' || $trimmed === 'ERR' || $trimmed === 'DEBUG') {
                 continue;
             }
 
@@ -123,22 +144,24 @@ class SystemLogViewer extends Component
                 continue;
             }
 
-            // 2. Loại bỏ các đường dẫn vendor nội bộ nếu không chứa exception thực tế
-            if (str_contains($trimmed, '/vendor/') && !str_contains($trimmed, 'Exception') && !str_contains($trimmed, 'Error') && !str_contains($trimmed, 'Permission denied')) {
+            // 2. Loại bỏ các đường dẫn vendor nội bộ nếu không phải exception/error
+            if (str_contains($trimmed, '/vendor/') && !str_contains($trimmed, 'Exception') && !str_contains($trimmed, 'SQLSTATE') && !str_contains($trimmed, 'ERROR') && !str_contains($trimmed, 'Permission denied')) {
                 continue;
             }
 
             // 3. Giữ lại những dòng thực sự quan trọng: Lỗi, Cảnh báo, Exception, Trạng thái luồng
             if (
+                str_contains($trimmed, 'SQLSTATE') ||
+                str_contains($trimmed, 'PDOException') ||
+                str_contains($trimmed, 'transaction is aborted') ||
+                str_contains($trimmed, 'commands ignored') ||
                 str_contains($trimmed, '.ERROR:') ||
                 str_contains($trimmed, '.CRITICAL:') ||
                 str_contains($trimmed, '.EMERGENCY:') ||
                 str_contains($trimmed, '.ALERT:') ||
                 str_contains($trimmed, '.WARNING:') ||
                 str_contains($trimmed, 'Exception') ||
-                str_contains($trimmed, 'PDOException') ||
                 str_contains($trimmed, 'Error') ||
-                str_contains($trimmed, 'SQLSTATE') ||
                 str_contains($trimmed, 'Permission denied') ||
                 str_contains($trimmed, 'connection to server') ||
                 str_contains($trimmed, 'failed') ||
@@ -146,9 +169,13 @@ class SystemLogViewer extends Component
                 str_contains($trimmed, '[previous exception]') ||
                 str_contains($trimmed, 'SystemLogViewer:') ||
                 str_contains($trimmed, '[INIT]') ||
-                str_contains($trimmed, '[MANUAL TRIGGER')
+                str_contains($trimmed, '[CRON TICK') ||
+                str_contains($trimmed, '[MANUAL TRIGGER') ||
+                str_contains($trimmed, '[SANDBOX')
             ) {
-                $filteredLines[] = $trimmed;
+                // Làm sạch nhãn ERR hoặc INFO ở đầu dòng nếu Render sinh ra
+                $cleanedLine = preg_replace('/^(ERR|INFO|DEBUG|WARN)\s+/', '', $trimmed);
+                $filteredLines[] = $cleanedLine;
             }
         }
 
@@ -215,9 +242,11 @@ class SystemLogViewer extends Component
             ->where('scheduled_at', '>=', Carbon::today())
             ->count();
         $lastCronTick = (string) SystemSetting::get('last_cron_tick_at', 'Chưa ghi nhận');
+        $cleanErrorsText = $this->getCleanErrors();
 
         return view('livewire.logs.system-log-viewer', [
             'logs' => $parsedLogs,
+            'cleanErrorsText' => $cleanErrorsText,
             'activeChannelsCount' => $activeChannelsCount,
             'totalChannelsCount' => $totalChannelsCount,
             'readyInVaultCount' => $readyInVaultCount,

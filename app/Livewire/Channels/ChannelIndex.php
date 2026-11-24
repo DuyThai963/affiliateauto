@@ -49,6 +49,17 @@ class ChannelIndex extends Component
         $this->feedbackMessage = $message;
     }
 
+    public function toggleChannelStatus(int $channelId): void
+    {
+        $channel = Channel::query()->find($channelId);
+        if ($channel !== null) {
+            $channel->status = ($channel->status === 'active') ? 'paused' : 'active';
+            $channel->save();
+            $statusLabel = $channel->status === 'active' ? 'Active (Đang hoạt động)' : 'Tạm dừng (Paused)';
+            $this->feedbackMessage = "Đã chuyển trạng thái kênh [{$channel->channel_name}] sang {$statusLabel}.";
+        }
+    }
+
     public function deleteChannel(int $channelId): void
     {
         $channel = Channel::query()->find($channelId);

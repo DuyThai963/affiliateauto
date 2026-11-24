@@ -116,33 +116,39 @@
                                 {{ $channel->last_posted_at ? $channel->last_posted_at->diffForHumans() : 'Chưa đăng' }}
                             </td>
                             <td class="px-6 py-3.5 whitespace-nowrap">
-                                @if ($channel->status === 'active')
-                                    <div>
-                                        <span class="inline-flex items-center text-[11px] font-medium text-[#30D158]">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-[#30D158] mr-1.5 shadow-[0_0_6px_rgba(48,209,88,0.5)]"></span> Đã kết nối
+                                <button 
+                                    type="button" 
+                                    wire:click="toggleChannelStatus({{ $channel->id }})"
+                                    title="Bấm để bật/tắt nhanh trạng thái Active / Tạm dừng"
+                                    class="text-left focus:outline-none group">
+                                    @if ($channel->status === 'active')
+                                        <div>
+                                            <span class="inline-flex items-center text-[11px] font-medium text-[#30D158] group-hover:underline">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-[#30D158] mr-1.5 shadow-[0_0_6px_rgba(48,209,88,0.5)]"></span> Đã kết nối (Active)
+                                            </span>
+                                            @if ($channel->last_healthchecked_at)
+                                                <div class="text-[10px] text-[#8E8E93] mt-0.5 font-mono">
+                                                    Ping: {{ $channel->last_healthchecked_at->diffForHumans() }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @elseif ($channel->status === 'paused')
+                                        <span class="inline-flex items-center text-[11px] font-medium text-[#FF9F0A] group-hover:underline">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-[#FF9F0A] mr-1.5"></span> Tạm dừng (Click để bật)
                                         </span>
-                                        @if ($channel->last_healthchecked_at)
-                                            <div class="text-[10px] text-[#8E8E93] mt-0.5 font-mono">
-                                                Ping: {{ $channel->last_healthchecked_at->diffForHumans() }}
-                                            </div>
-                                        @endif
-                                    </div>
-                                @elseif ($channel->status === 'paused')
-                                    <span class="inline-flex items-center text-[11px] font-medium text-[#FF9F0A]">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-[#FF9F0A] mr-1.5"></span> Tạm dừng
-                                    </span>
-                                @else
-                                    <div>
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#242426] text-[#FF453A] border border-[#FF453A]/40 animate-pulse">
-                                            Cần Đăng Nhập Lại
-                                        </span>
-                                        @if ($channel->health_notes)
-                                            <div class="text-[10px] text-[#8E8E93] mt-0.5 truncate max-w-[140px]" title="{{ $channel->health_notes }}">
-                                                {{ $channel->health_notes }}
-                                            </div>
-                                        @endif
-                                    </div>
-                                @endif
+                                    @else
+                                        <div>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#242426] text-[#FF453A] border border-[#FF453A]/40 group-hover:border-[#30D158] group-hover:text-[#30D158] transition-colors">
+                                                Cần Đăng Nhập (Bấm để kích hoạt Active)
+                                            </span>
+                                            @if ($channel->health_notes)
+                                                <div class="text-[10px] text-[#8E8E93] mt-0.5 truncate max-w-[140px]" title="{{ $channel->health_notes }}">
+                                                    {{ $channel->health_notes }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endif
+                                </button>
                             </td>
                             <td class="px-6 py-3.5 whitespace-nowrap text-right space-x-1.5">
                                 <!-- Nút Quản Lý Session (Sprint 6 Modal) -->

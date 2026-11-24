@@ -34,7 +34,12 @@ class ProduceBufferContentCommand extends Command
         $this->info('--- BẮT ĐẦU QUÉT KHO ĐỆM BUFFER VAULT ---');
 
         $channelIdOption = $this->option('channel-id');
-        $channelsQuery = Channel::query()->where('status', 'active');
+        $isSandbox = \App\Models\SystemSetting::get('sandbox_test_mode', 'true') === 'true';
+
+        $channelsQuery = Channel::query();
+        if (!$isSandbox) {
+            $channelsQuery->where('status', 'active');
+        }
 
         if ($channelIdOption !== null) {
             $channelsQuery->where('id', (int) $channelIdOption);
@@ -43,8 +48,25 @@ class ProduceBufferContentCommand extends Command
         $activeChannels = $channelsQuery->get();
 
         if ($activeChannels->isEmpty()) {
-            $this->warn('Không có kênh nào đang ở trạng thái active.');
-            return Command::SUCCESS;
+            if ($isSandbox) {
+                // Trong chế độ Sandbox: tự tạo 1 kênh demo để người dùng test luồng
+                $demoChannel = Channel::query()->create([
+                    'platform' => 'tiktok',
+                    'channel_name' => '@review_test_channel',
+                    'type' => 'affiliate',
+                    'browser_profile_path' => 'storage/app/browser_profiles/tiktok_channel_demo',
+                    'status' => 'active',
+                    'daily_post_limit' => 5,
+                    'min_interval_minutes' => 60,
+                ]);
+                $activeChannels = collect([$demoChannel]);
+                Log::info('ProduceBufferContentCommand: [SANDBOX] Tự động khởi tạo kênh demo @review_test_channel');
+            } else {
+                $msg = 'ProduceBufferContentCommand: Không có kênh nào đang ở trạng thái active (Cần bật trạng thái Active cho kênh).';
+                $this->warn($msg);
+                Log::info($msg);
+                return Command::SUCCESS;
+            }
         }
 
         $tasksProducedCount = 0;
@@ -57,14 +79,21 @@ class ProduceBufferContentCommand extends Command
                 ->count();
 
             $this->line("Kênh [{$channel->channel_name}] (Type: {$channel->type}) - Đệm hiện tại: {$currentBufferCount}/10");
+            Log::info("ProduceBufferContentCommand: Quét kênh [{$channel->channel_name}] - Kho đệm: {$currentBufferCount}/10 video");
 
             if ($currentBufferCount < 10) {
                 // Kiểm tra xem hệ thống còn API Key khả dụng không
                 $availableKey = $tokenManager->getAvailableKey('gemini');
+                $isSimulation = ($availableKey === null && env('LLM_DRIVER') !== 'claude');
 
-                if ($availableKey === null) {
+                if ($availableKey === null && !$isSimulation) {
                     $this->warn("Tạm hoãn sinh video cho kênh [{$channel->channel_name}] vì toàn bộ API Keys đều hết quota hoặc cooldown.");
                     break;
+                }
+
+                if ($isSimulation) {
+                    $this->info("Kênh [{$channel->channel_name}]: Chưa có API Key thật, tự động dùng kịch bản mô phỏng AI (Simulation Mode) để duy trì luồng tự động.");
+                    Log::info("ProduceBufferContentCommand: Kênh [{$channel->channel_name}] dùng Mock AI sinh kịch bản vì chưa cấu hình API Key.");
                 }
 
                 // Nếu là kênh affiliate: Tự động chọn 1 sản phẩm đang bán theo đúng nền tảng của kênh
