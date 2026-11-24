@@ -143,6 +143,7 @@ class RenderVideoJob implements ShouldQueue
                     'scheduled_at' => null,
                 ]);
                 Log::info("RenderVideoJob: Task #{$videoTask->id} dựng xong, đang chờ phê duyệt (Co-Pilot Mode)");
+                $this->notifyTelegramVaultReady($videoTask, null, true);
             } else {
                 $scheduler = app(\App\Services\HumanLikeSchedulerService::class);
                 $slot = $channel ? $scheduler->calculateNextPublishSlot($channel) : null;
@@ -155,6 +156,7 @@ class RenderVideoJob implements ShouldQueue
                     'scheduled_at' => $slot,
                 ]);
                 Log::info("RenderVideoJob: Task #{$videoTask->id} đã lưu Buffer Vault, lên lịch: " . ($slot ? $slot->toDateTimeString() : 'Chưa xếp slot'));
+                $this->notifyTelegramVaultReady($videoTask, $slot, false);
             }
 
         } catch (\Throwable $throwable) {
@@ -203,6 +205,43 @@ class RenderVideoJob implements ShouldQueue
         }
 
         return null;
+    }
+
+    /**
+     * Gửi thông báo chủ động về Telegram khi video đã dựng xong và sẵn sàng trong kho đệm.
+     */
+    protected function notifyTelegramVaultReady(VideoTask $videoTask, ?\Carbon\Carbon $slot, bool $isCoPilot): void
+    {
+        try {
+            $adminChatId = (string) env('TELEGRAM_ADMIN_CHAT_ID', '');
+            if (empty($adminChatId)) {
+                return;
+            }
+
+            $bot = app(\App\Core\Contracts\NotificationBotInterface::class);
+            $channel = $videoTask->channel;
+            $channelName = $channel ? $channel->channel_name : "Kênh #{$videoTask->channel_id}";
+            $slotText = $slot ? $slot->format('H:i - d/m/Y') : 'Chưa xếp lịch';
+
+            if ($isCoPilot) {
+                $message = "🎬 <b>[CO-PILOT] VIDEO MỚI CẦN DUYỆT!</b>\n\n"
+                    . "📺 Kênh: <b>{$channelName}</b>\n"
+                    . "📌 Tiêu đề: <i>{$videoTask->title}</i>\n"
+                    . "📝 Tác vụ: <b>Task #{$videoTask->id}</b>\n\n"
+                    . "👉 Gõ: <code>/approve {$videoTask->id}</code> để duyệt và xếp lịch tự động.\n"
+                    . "👉 Gõ: <code>/publish {$videoTask->id}</code> để lấy video đăng ngay.";
+            } else {
+                $message = "🤖 <b>[AUTO-PILOT] VIDEO MỚI TRONG KHO ĐỆM!</b>\n\n"
+                    . "📺 Kênh: <b>{$channelName}</b>\n"
+                    . "📌 Tiêu đề: <i>{$videoTask->title}</i>\n"
+                    . "⏰ Lịch đăng dự kiến: <b>{$slotText}</b>\n"
+                    . "🎯 Trạng thái: Sẵn sàng tự động đăng khi đến giờ hẹn!";
+            }
+
+            $bot->sendMessage($adminChatId, $message);
+        } catch (\Throwable $throwable) {
+            Log::warning('Không thể gửi thông báo Telegram trong RenderVideoJob: ' . $throwable->getMessage());
+        }
     }
 }
 

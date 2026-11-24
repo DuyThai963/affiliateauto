@@ -101,6 +101,17 @@ class ProduceBufferContentCommand extends Command
         }
 
         $this->info(">>> HOÀN TẤT: Đã kích hoạt sản xuất {$tasksProducedCount} kịch bản mới cho kho đệm! <<<");
+
+        // Tự động quét và kích hoạt RenderVideoJob cho các tác vụ đã có kịch bản (assets_ready)
+        $assetsReadyTasks = VideoTask::query()
+            ->where('status', 'assets_ready')
+            ->get();
+
+        foreach ($assetsReadyTasks as $readyTask) {
+            \App\Jobs\RenderVideoJob::dispatch($readyTask->id);
+            Log::info("ProduceBufferContentCommand: Tự động kích hoạt RenderVideoJob cho Task #{$readyTask->id}");
+        }
+
         return Command::SUCCESS;
     }
 }

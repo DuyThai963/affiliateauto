@@ -3,6 +3,7 @@
 use App\Livewire\ApiKeys\ApiKeyIndex;
 use App\Livewire\Channels\ChannelIndex;
 use App\Livewire\Dashboard\LiveMonitor;
+use App\Livewire\Logs\SystemLogViewer;
 use App\Livewire\Products\ProductIndex;
 use App\Models\SystemSetting;
 use App\Models\VideoTask;
@@ -22,6 +23,7 @@ Route::get('/dashboard', LiveMonitor::class)->name('dashboard');
 Route::get('/channels', ChannelIndex::class)->name('channels.index');
 Route::get('/api-keys', ApiKeyIndex::class)->name('api-keys.index');
 Route::get('/products', ProductIndex::class)->name('products.index');
+Route::get('/system-logs', SystemLogViewer::class)->name('system-logs.index');
 
 // Stream video trong Buffer Vault phục vụ Modal xem trước (Preview)
 Route::get('/vault/video/{task}', function (VideoTask $task) {

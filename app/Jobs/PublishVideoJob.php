@@ -115,11 +115,15 @@ class PublishVideoJob implements ShouldQueue
                 ArchiveVideoToCloudJob::dispatch($videoTask->id);
 
                 Log::info("PublishVideoJob: Task #{$videoTask->id} xuất bản thành công lên kênh {$channel->channel_name} ({$channel->platform})");
+
+                // Gửi thông báo chủ động về Telegram
+                $this->notifyTelegramPublished($videoTask, $channel, $now);
             } else {
                 $videoTask->update([
                     'status' => 'failed',
                     'current_step' => 'Driver trả về kết quả xuất bản không thành công.',
                 ]);
+                $this->notifyTelegramFailed($videoTask, $channel, 'Driver trả về kết quả không thành công');
             }
 
         } catch (\Throwable $throwable) {
@@ -136,6 +140,57 @@ class PublishVideoJob implements ShouldQueue
                 'current_step' => "Thất bại: {$errorMessage}",
                 'error_log' => $errorMessage,
             ]);
+
+            $this->notifyTelegramFailed($videoTask, $channel, $errorMessage);
+        }
+    }
+
+    /**
+     * Gửi thông báo thành công về Telegram cho Admin.
+     */
+    protected function notifyTelegramPublished(VideoTask $videoTask, \App\Models\Channel $channel, \Carbon\Carbon $publishedTime): void
+    {
+        try {
+            $adminChatId = (string) env('TELEGRAM_ADMIN_CHAT_ID', '');
+            if (empty($adminChatId)) {
+                return;
+            }
+
+            $bot = app(\App\Core\Contracts\NotificationBotInterface::class);
+            $timeStr = $publishedTime->format('H:i:s d/m/Y');
+            $message = "🚀 <b>[THÔNG BÁO] ĐÃ ĐĂNG VIDEO THÀNH CÔNG!</b>\n\n"
+                . "📺 Kênh: <b>{$channel->channel_name}</b> (" . strtoupper($channel->platform) . ")\n"
+                . "🎬 Tiêu đề: <i>{$videoTask->title}</i>\n"
+                . "⏰ Thời gian: <b>{$timeStr}</b>\n"
+                . "📦 Lưu trữ: Đang tự động lưu kho Cloud 5TB.";
+
+            $bot->sendMessage($adminChatId, $message);
+        } catch (\Throwable $throwable) {
+            Log::warning('Không thể gửi thông báo Telegram trong PublishVideoJob: ' . $throwable->getMessage());
+        }
+    }
+
+    /**
+     * Gửi cảnh báo thất bại về Telegram cho Admin.
+     */
+    protected function notifyTelegramFailed(VideoTask $videoTask, \App\Models\Channel $channel, string $errorReason): void
+    {
+        try {
+            $adminChatId = (string) env('TELEGRAM_ADMIN_CHAT_ID', '');
+            if (empty($adminChatId)) {
+                return;
+            }
+
+            $bot = app(\App\Core\Contracts\NotificationBotInterface::class);
+            $message = "🚨 <b>[CẢNH BÁO] XUẤT BẢN THẤT BẠI!</b>\n\n"
+                . "📺 Kênh: <b>{$channel->channel_name}</b> (" . strtoupper($channel->platform) . ")\n"
+                . "📌 Task: #{$videoTask->id}\n"
+                . "❌ Nguyên nhân: <code>{$errorReason}</code>\n"
+                . "💡 Hãy gõ <code>/status</code> để kiểm tra lại hệ thống.";
+
+            $bot->sendMessage($adminChatId, $message);
+        } catch (\Throwable $throwable) {
+            Log::warning('Không thể gửi thông báo Telegram lỗi trong PublishVideoJob: ' . $throwable->getMessage());
         }
     }
 }

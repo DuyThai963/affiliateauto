@@ -14,7 +14,9 @@ services:
       - key: APP_KEY
         generateValue: true
       - key: LOG_CHANNEL
-        value: stderr
+        value: stack
+      - key: LOG_STACK
+        value: single,stderr
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_SSLMODE
